@@ -1,0 +1,109 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = "Example web-service"
+authors = ["Eljan Tomin <straxisrule@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiomisc = "^17.5.29"
+dishka = "^1.4.2"
+fastapi = "^0.115.6"
+SQLAlchemy = "^2.0.36"
+alembic = "^1.13.3"
+asyncpg = "^0.30.0"
+uvloop = "^0.21.0"
+granian = "^1.6.4"
+pydantic = {extras = ["email"], version = "^2.10.3"}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+coverage = "^7.6.9"
+mypy = "^1.12.1"
+ruff = "^0.8.2"
+polyfactory = "^2.18.1"
+pre-commit = "^4.0.1"
+dirty-equals = "^0.8.0"
+httpx = "^0.28.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+python_files = "test_*"
+python_functions = "test_*"
+python_classes = "TestSuite*"
+addopts = "-p no:cacheprovider"
+asyncio_default_fixture_loop_scope = "function"
+
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+command_line = "-m pytest"
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.ruff]
+line-length = 88
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+]
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+select = [
+    "BLE",
+    "C90",
+    "E",
+    "F",
+    "G",
+    "I",
+    "ICN",
+    "ISC",
+    "PLE",
+    "Q",
+    "RUF006",
+    "RUF100",
+    "T10",
+    "T20",
+    "TID",
+    "UP",
+    "W",
+]
+ignore = ["ISC001"]
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = false
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = [
+    "asyncpg.*",
+]
+ignore_missing_imports = true
