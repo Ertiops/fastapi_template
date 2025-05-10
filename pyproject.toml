@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "app"
 version = "0.1.0"
-description = "Example web-service"
+description = "Python WebServer"
 authors = ["Eljan Tomin <straxisrule@gmail.com>"]
 license = "MIT"
 readme = "README.md"
