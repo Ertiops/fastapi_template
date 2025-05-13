@@ -1,5 +1,5 @@
 pytest_plugins = (
-    "tests.plugins.factories.book",
+    "tests.plugins.factories.movie",
     "tests.plugins.factories.user",
     "tests.plugins.instances.config",
     "tests.plugins.instances.db",
