@@ -2,7 +2,7 @@ import pytest
 
 from app.adapters.database.config import DatabaseConfig
 from app.application.config import AppConfig, SecretConfig
-from app.controllers.rest.config import RestConfig
+from app.presenters.rest.config import RestConfig
 
 
 @pytest.fixture

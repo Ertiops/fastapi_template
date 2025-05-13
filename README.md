@@ -1,97 +1,95 @@
-# Example Web Service
+# 📦 Example Web Service
 
-Example REST web service for App with:
+A RESTful API service built with FastAPI that follows Clean Architecture principles.
 
-- clean architecture with interfaces, layers and entities
-- Dependency Injection with [dishka](https://github.com/reagento/dishka)
-- auto tests with [pytest](https://docs.pytest.org/en/stable/)
-- formatting and linting with [ruff](https://github.com/astral-sh/ruff) and [mypy](https://github.com/python/mypy)
-- Dockerfile with best practices
-- CI/CD with Github Workflows with separated actions
-- [pre-commit](https://github.com/pre-commit/pre-commit) features
+---
 
-## Working with repos
+## ✨ Features
 
-### How to install dependencies?
+- ✅ Clean architecture with clearly separated interfaces, layers, and entities
+- 🧩 Dependency Injection using [Dishka](https://github.com/reagento/dishka)
+- 🧪 Automatic testing via [pytest](https://docs.pytest.org/en/stable/)
+- 🧹 Formatting and static analysis with [ruff](https://github.com/astral-sh/ruff) and [mypy](https://github.com/python/mypy)
+- 🐳 Dockerfile following best practices
+- 🔁 CI/CD pipeline powered by GitHub Workflows with modular jobs
+- 🧷 Integrated [pre-commit](https://github.com/pre-commit/pre-commit) support
 
-Creating new venv in project folder and install all dependencies with poetry:
+---
+
+## ⚙️ Development Setup
+
+### 📥 Install Dependencies
+
+Use `poetry` to create a virtual environment and install dependencies:
 
 ```bash
 make develop
 ```
 
-### How to run dev containers for testing?
+### 🐳 Start Local Dev Containers
 
-Start postgres container described in `docker-compose.dev.yaml` from scratch:
+To launch the PostgreSQL container for local development using Docker Compose:
 
 ```bash
 make local
 ```
 
-### How to run tests?
+### 🧪 Run Tests
 
-The tests must be run after the dependencies are installed and when the `make local` process is running separately:
+Make sure containers are running (make local), then execute:
 
 ```bash
 pytest -vx ./tests
 ```
 
-### How to apply all actual migrations?
+### 📈 Apply Database Migrations
 
-Remember that to connect to the database, you must specify the environment
-variable `APP_DB_DSN`
+Ensure the APP_DB_DSN environment variable is configured correctly, then run:
 
 ```bash
-python -m app.adapters.database upgrade head
+make local-apply-migrations
 ```
 
-### How to generate new migration?
+### 🏗️ Create a New Database Migration
 
-Don't forget to apply migrations with the above command first.
+Before creating a new migration, make sure all existing migrations have been applied:
 
-```bash
+```bash (at server)
 python -m app.adapters.database revision --autogenerate -m "Your message"
 ```
 
-### How to work with repo in CI?
+```bash (locally)
+make local-create-migrations
+```
 
-Separate commands are written in the `Makefile` to run dependency
-installation, checks, and testing. They have the suffix `-ci`
+### 🔁 Run CI Steps Locally
+
+Use these Makefile commands that mimic the CI process:
 
 ```bash
-make develop-ci  # install dependencies
-make lint-ci     # run linters - ruff and mypy
-make test-ci     # run tests with pytest and coverage
+make develop-ci  # Install dependencies
+make lint-ci     # Run ruff and mypy for linting and type checks
+make test-ci     # Run tests with pytest and collect coverage
 ```
 
-## Routes
+## 📚 API Endpoints
 
-List of routes:
-
-### Books
-
-```api
-GET     /api/v1/books/            Fetch Books
-POST    /api/v1/books/            Create Book
-GET     /api/v1/books/{book_id}/  Fetch Book by ID
-PATCH   /api/v1/books/{book_id}/  Update Book by ID
-DELETE  /api/v1/books/{book_id}/  Delete Book by ID
-```
-
-### Users
+### 👤 Users
 
 ```api
 GET     /api/v1/users/             Fetch Users
-POST    /api/v1/users/             Create Book
+POST    /api/v1/users/             Create User
 GET     /api/v1/users/{user_id}/   Fetch User by ID
 PATCH   /api/v1/users/{user_id}/   Update User by ID
 DELETE  /api/v1/users/{user_id}/   Delete User by ID
 ```
 
-### User Books
+### 🎬 Movies
 
 ```api
-GET     /api/v1/users/{user_id}/books/                   Get user books
-POST    /api/v1/users/{user_id}/books/{book_id}/issue/   Issue Book to User
-POST    /api/v1/users/{user_id}/books/{book_id}/return/  Return Book from User
+GET     /api/v1/movies/            Fetch Movies
+POST    /api/v1/movies/            Create Movie
+GET     /api/v1/movies/{movie_id}/  Fetch Movie by ID
+PATCH   /api/v1/movies/{movie_id}/  Update Movie by ID
+DELETE  /api/v1/movies/{movie_id}/  Delete Movie by ID
 ```

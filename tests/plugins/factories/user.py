@@ -9,8 +9,8 @@ from tests.utils import IterUse
 
 
 class UserTableFactory(SQLAlchemyFactory[UserTable]):
-    email = IterUse[str](lambda count: f"email{count}@example.com")
-    username = IterUse[str](lambda count: f"username{count}")
+    email = IterUse[str](lambda count: f"test{count}@test.com")
+    username = IterUse[str](lambda count: f"test_username{count}")
 
     @classmethod
     def deleted_at(cls) -> None:

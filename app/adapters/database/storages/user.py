@@ -28,14 +28,7 @@ class UserStorage(IUserStorage):
         self.__session = session
 
     async def create(self, *, input_dto: CreateUser) -> User:
-        stmt = (
-            insert(UserTable)
-            .values(
-                email=input_dto.email,
-                username=input_dto.username,
-            )
-            .returning(UserTable)
-        )
+        stmt = insert(UserTable).values(**input_dto.to_dict()).returning(UserTable)
         try:
             result = (await self.__session.scalars(stmt)).one()
         except IntegrityError as e:

@@ -4,8 +4,8 @@ import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
-from app.controllers.rest.config import RestConfig
-from app.controllers.rest.service import RestService
+from app.presenters.rest.config import RestConfig
+from app.presenters.rest.service import RestService
 
 
 @pytest.fixture

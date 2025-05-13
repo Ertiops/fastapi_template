@@ -14,8 +14,8 @@ from sqlalchemy.ext.asyncio import (
 )
 
 TABLES_FOR_TRUNCATE: Sequence[str] = (
-    "books",
     "users",
+    "movies",
 )
 
 

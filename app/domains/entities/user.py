@@ -1,11 +1,10 @@
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, fields
+from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
 from uuid import UUID
 
 from app.application.entities import UNSET, Unset
-from app.domains.entities.common import Pagination
+from app.domains.entities.common import Pagination, ToDictMixin
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
@@ -28,20 +27,13 @@ class UserList:
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class CreateUser:
+class CreateUser(ToDictMixin):
     username: str
     email: str
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class UpdateUser:
+class UpdateUser(ToDictMixin):
     id: UUID
     username: str | Unset = UNSET
     email: str | Unset = UNSET
-
-    def to_dict(self) -> Mapping[str, Any]:
-        return {
-            field.name: getattr(self, field.name)
-            for field in fields(self)
-            if field.name != "id" and not isinstance(getattr(self, field.name), Unset)
-        }

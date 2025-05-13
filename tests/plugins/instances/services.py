@@ -1,14 +1,14 @@
 import pytest
 
-from app.domains.interfaces.storages.book import IBookStorage
+from app.domains.interfaces.storages.movie import IMovieStorage
 from app.domains.interfaces.storages.user import IUserStorage
-from app.domains.services.book import BookService
+from app.domains.services.movie import MovieService
 from app.domains.services.user import UserService
 
 
 @pytest.fixture
-def book_service(book_storage: IBookStorage) -> BookService:
-    return BookService(book_storage=book_storage)
+def movie_service(movie_storage: IMovieStorage) -> MovieService:
+    return MovieService(movie_storage=movie_storage)
 
 
 @pytest.fixture
