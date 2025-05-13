@@ -20,7 +20,7 @@ from app.presenters.rest.routers.api.v1.schemas.movie import (
     UpdateMovieSchema,
 )
 
-router = APIRouter(prefix="/movies", tags=["Books"], route_class=DishkaRoute)
+router = APIRouter(prefix="/movies", tags=["Movies"], route_class=DishkaRoute)
 
 
 @router.post(

@@ -40,7 +40,7 @@ async def test__create__ok__status(client: AsyncClient) -> None:
     response = await client.post(
         API_URL,
         json=dict(
-            title="test_book",
+            title="test_movie",
             description="test_description",
             year=now_utc().year,
             director="test_director",
@@ -54,7 +54,7 @@ async def test__create__ok__status(client: AsyncClient) -> None:
 
 async def test__create__ok__format(client: AsyncClient) -> None:
     json_data = dict(
-        title="test_book",
+        title="test_movie",
         description="test_description",
         year=now_utc().year,
         director="test_director",
