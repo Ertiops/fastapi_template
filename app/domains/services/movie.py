@@ -21,10 +21,10 @@ class MovieService:
         return await self.__movie_storage.create(input_dto=input_dto)
 
     async def get_by_id(self, *, input_id: UUID) -> Movie:
-        book = await self.__movie_storage.get_by_id(input_id=input_id)
-        if book is None:
+        movie = await self.__movie_storage.get_by_id(input_id=input_id)
+        if movie is None:
             raise EntityNotFoundException(entity=Movie, entity_id=input_id)
-        return book
+        return movie
 
     async def get_list(self, *, input_dto: MovieListParams) -> MovieList:
         total = await self.__movie_storage.count(input_dto=input_dto)

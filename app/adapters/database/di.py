@@ -40,7 +40,7 @@ class DatabaseProvider(Provider):
         return SqlalchemyUow(session=session_factory())
 
     @provide(scope=Scope.REQUEST)
-    def book_storage(self, uow: SqlalchemyUow) -> IMovieStorage:
+    def movie_storage(self, uow: SqlalchemyUow) -> IMovieStorage:
         return MovieStorage(session=uow.session)
 
     @provide(scope=Scope.REQUEST)
