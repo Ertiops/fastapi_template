@@ -17,14 +17,20 @@ TABLES_FOR_TRUNCATE: Sequence[str] = (
     "users",
     "movies",
 )
+TYPES_FOR_TRUNCATE: Sequence[str] = ("movie_genre",)
 
 
 async def truncate_tables(engine: AsyncEngine) -> None:
     async with engine.begin() as conn:
         for table in TABLES_FOR_TRUNCATE:
             await conn.execute(text(f"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE"))
-
         await conn.commit()
+
+
+async def truncate_types(engine: AsyncEngine) -> None:
+    async with engine.begin() as conn:
+        for type_name in TYPES_FOR_TRUNCATE:
+            await conn.execute(text(f"DROP TYPE IF EXISTS {type_name} CASCADE"))
 
 
 async def run_async_migrations(
