@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 78b833c7b5b7
+Revision ID: 8bb600814d4d
 Revises:
-Create Date: 2025-05-13 12:46:21.941033
+Create Date: 2025-05-19 16:38:31.548475
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "78b833c7b5b7"
+revision: str = "8bb600814d4d"
 down_revision: str | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
