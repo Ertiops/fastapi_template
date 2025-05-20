@@ -7,7 +7,7 @@ from app.adapters.database.tables import BaseTable
 from tests.utils import get_diff_db_metadata
 
 
-async def test_migrations_up_to_date(engine: AsyncEngine) -> None:
+async def test__up_to_date(engine: AsyncEngine) -> None:
     async with engine.connect() as connection:
         diff = await connection.run_sync(
             get_diff_db_metadata,
@@ -16,7 +16,7 @@ async def test_migrations_up_to_date(engine: AsyncEngine) -> None:
     assert not diff
 
 
-def test_migrations_apply_step_by_step(
+def test__sequential_apply(
     alembic_config: AlembicConfig,
     engine: AsyncEngine,
 ) -> None:
