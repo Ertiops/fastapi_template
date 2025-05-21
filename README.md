@@ -1,4 +1,4 @@
-# 📦 Example Web Service
+# 📦 FastAPI Template
 
 A RESTful API service built with FastAPI that follows Clean Architecture principles.
 
