@@ -17,7 +17,7 @@ class IMovieStorage(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_id(self, *, input_id: UUID) -> Movie | None:
+    async def get_by_id(self, *, input_dto: UUID) -> Movie | None:
         raise NotImplementedError
 
     @abstractmethod
@@ -29,7 +29,7 @@ class IMovieStorage(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def exists_by_id(self, *, input_id: UUID) -> bool:
+    async def exists_by_id(self, *, input_dto: UUID) -> bool:
         raise NotImplementedError
 
     @abstractmethod
@@ -37,5 +37,5 @@ class IMovieStorage(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_by_id(self, *, input_id: UUID) -> None:
+    async def delete_by_id(self, *, input_dto: UUID) -> None:
         raise NotImplementedError

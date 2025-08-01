@@ -21,7 +21,7 @@ class GetUserByIdUC(IUseCase[UUID, User]):
 
     async def execute(self, *, input_dto: UUID) -> User:
         async with self._uow:
-            user = await self._user_storage.get_by_id(input_id=input_dto)
+            user = await self._user_storage.get_by_id(input_dto=input_dto)
             if user is None:
                 raise EntityNotFoundException(entity=User, entity_id=input_dto)
             return user

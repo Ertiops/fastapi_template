@@ -69,7 +69,7 @@ async def test__get_by_id(
     create_user: Callable,
 ) -> None:
     db_user: UserTable = await create_user()
-    user = await user_storage.get_by_id(input_id=db_user.id)
+    user = await user_storage.get_by_id(input_dto=db_user.id)
     assert user == User(
         id=db_user.id,
         username=db_user.username,
@@ -80,7 +80,7 @@ async def test__get_by_id(
 
 
 async def test__get_by_id__none(user_storage: UserStorage) -> None:
-    assert await user_storage.get_by_id(input_id=uuid4()) is None
+    assert await user_storage.get_by_id(input_dto=uuid4()) is None
 
 
 async def test__get_by_id__deleted(
@@ -88,7 +88,7 @@ async def test__get_by_id__deleted(
     create_user: Callable,
 ) -> None:
     db_user: UserTable = await create_user(deleted_at=now_utc())
-    assert await user_storage.get_by_id(input_id=db_user.id) is None
+    assert await user_storage.get_by_id(input_dto=db_user.id) is None
 
 
 async def test__get_list(
@@ -168,11 +168,11 @@ async def test__count__zero(
 
 async def test__exists_by_id(user_storage: UserStorage, create_user: Callable) -> None:
     db_user: UserTable = await create_user()
-    assert await user_storage.exists_by_id(input_id=db_user.id)
+    assert await user_storage.exists_by_id(input_dto=db_user.id)
 
 
 async def test__exists_by_id__false(user_storage: UserStorage) -> None:
-    assert await user_storage.exists_by_id(input_id=uuid4()) is False
+    assert await user_storage.exists_by_id(input_dto=uuid4()) is False
 
 
 async def test__exists_by_id__deleted(
@@ -180,7 +180,7 @@ async def test__exists_by_id__deleted(
     create_user: Callable,
 ) -> None:
     db_user: UserTable = await create_user(deleted_at=now_utc())
-    assert await user_storage.exists_by_id(input_id=db_user.id) is False
+    assert await user_storage.exists_by_id(input_dto=db_user.id) is False
 
 
 async def test__update_by_id(
@@ -228,9 +228,9 @@ async def test__delete_by_id(
     create_user: Callable,
 ) -> None:
     db_user: UserTable = await create_user()
-    await user_storage.delete_by_id(input_id=db_user.id)
+    await user_storage.delete_by_id(input_dto=db_user.id)
     assert db_user.deleted_at is not None
 
 
 async def test__delete_by_id__none(user_storage: UserStorage) -> None:
-    assert await user_storage.delete_by_id(input_id=uuid4()) is None
+    assert await user_storage.delete_by_id(input_dto=uuid4()) is None

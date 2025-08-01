@@ -21,7 +21,7 @@ class GetMovieByIdUC(IUseCase[UUID, Movie]):
 
     async def execute(self, *, input_dto: UUID) -> Movie:
         async with self._uow:
-            movie = await self._movie_storage.get_by_id(input_id=input_dto)
+            movie = await self._movie_storage.get_by_id(input_dto=input_dto)
             if movie is None:
                 raise EntityNotFoundException(entity=Movie, entity_id=input_dto)
             return movie

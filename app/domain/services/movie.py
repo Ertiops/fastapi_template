@@ -20,10 +20,10 @@ class MovieService:
     async def create(self, *, input_dto: CreateMovie) -> Movie:
         return await self.__movie_storage.create(input_dto=input_dto)
 
-    async def get_by_id(self, *, input_id: UUID) -> Movie:
-        movie = await self.__movie_storage.get_by_id(input_id=input_id)
+    async def get_by_id(self, *, input_dto: UUID) -> Movie:
+        movie = await self.__movie_storage.get_by_id(input_dto=input_dto)
         if movie is None:
-            raise EntityNotFoundException(entity=Movie, entity_id=input_id)
+            raise EntityNotFoundException(entity=Movie, entity_id=input_dto)
         return movie
 
     async def get_list(self, *, input_dto: MovieListParams) -> MovieList:
@@ -32,11 +32,11 @@ class MovieService:
         return MovieList(total=total, items=items)
 
     async def update_by_id(self, *, input_dto: UpdateMovie) -> Movie:
-        if not await self.__movie_storage.exists_by_id(input_id=input_dto.id):
+        if not await self.__movie_storage.exists_by_id(input_dto=input_dto.id):
             raise EntityNotFoundException(entity=Movie, entity_id=input_dto.id)
         return await self.__movie_storage.update_by_id(input_dto=input_dto)
 
-    async def delete_by_id(self, *, input_id: UUID) -> None:
-        if not await self.__movie_storage.exists_by_id(input_id=input_id):
-            raise EntityNotFoundException(entity=Movie, entity_id=input_id)
-        await self.__movie_storage.delete_by_id(input_id=input_id)
+    async def delete_by_id(self, *, input_dto: UUID) -> None:
+        if not await self.__movie_storage.exists_by_id(input_dto=input_dto):
+            raise EntityNotFoundException(entity=Movie, entity_id=input_dto)
+        await self.__movie_storage.delete_by_id(input_dto=input_dto)

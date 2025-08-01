@@ -21,6 +21,6 @@ class DeleteMovieByIdUC(IUseCase[UUID, None]):
 
     async def execute(self, *, input_dto: UUID) -> None:
         async with self._uow:
-            if not await self._movie_storage.exists_by_id(input_id=input_dto):
+            if not await self._movie_storage.exists_by_id(input_dto=input_dto):
                 raise EntityNotFoundException(entity=Movie, entity_id=input_dto)
-            await self._movie_storage.delete_by_id(input_id=input_dto)
+            await self._movie_storage.delete_by_id(input_dto=input_dto)
