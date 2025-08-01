@@ -10,7 +10,7 @@ from app.application.exceptions import (
     EntityAlreadyExistsException,
     EntityNotFoundException,
 )
-from app.domains.entities.user import (
+from app.domain.entities.user import (
     CreateUser,
     UpdateUser,
     User,
@@ -166,7 +166,7 @@ async def test__count__zero(
     assert await user_storage.count(input_dto=UserListParams(limit=10, offset=0)) == 0
 
 
-async def test__exists_by_id(user_storage: UserStorage, create_user) -> None:
+async def test__exists_by_id(user_storage: UserStorage, create_user: Callable) -> None:
     db_user: UserTable = await create_user()
     assert await user_storage.exists_by_id(input_id=db_user.id)
 
@@ -209,6 +209,17 @@ async def test__update_by_id__entity_not_found_exception(
     with pytest.raises(EntityNotFoundException):
         await user_storage.update_by_id(
             input_dto=UpdateUser(id=uuid4(), username="new_username")
+        )
+
+
+async def test__update_by_id__entity_not_found_exception__deleted(
+    user_storage: UserStorage,
+    create_user: Callable,
+) -> None:
+    db_user: UserTable = await create_user(deleted_at=now_utc())
+    with pytest.raises(EntityNotFoundException):
+        await user_storage.update_by_id(
+            input_dto=UpdateUser(id=db_user.id, username="test_username")
         )
 
 

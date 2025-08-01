@@ -1,14 +1,14 @@
 from uuid import UUID
 
 from app.application.exceptions import EntityNotFoundException
-from app.domains.entities.movie import (
+from app.domain.entities.movie import (
     CreateMovie,
     Movie,
     MovieList,
     MovieListParams,
     UpdateMovie,
 )
-from app.domains.interfaces.storages.movie import IMovieStorage
+from app.domain.interfaces.storages.movie import IMovieStorage
 
 
 class MovieService:

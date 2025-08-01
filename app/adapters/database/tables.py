@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.adapters.database.base import BaseTable, IdentifableMixin, TimestampedMixin
 from app.adapters.database.utils import make_pg_enum
-from app.domains.entities.movie import MovieGenre
+from app.domain.entities.movie import MovieGenre
 
 
 class UserTable(BaseTable, TimestampedMixin, IdentifableMixin):

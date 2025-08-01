@@ -1,5 +1,5 @@
 from app.adapters.database.tables import UserTable
-from app.domains.entities.user import User
+from app.domain.entities.user import User
 
 
 def convert_user_table_to_dto(

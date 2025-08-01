@@ -5,13 +5,16 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Query
 
 from app.application.exceptions import EmptyPayloadException
-from app.domains.entities.user import (
+from app.domain.entities.user import (
     CreateUser,
     UpdateUser,
     UserListParams,
 )
-from app.domains.services.user import UserService
-from app.domains.uow import AbstractUow
+from app.domain.use_cases.user.create import CreateUserUC
+from app.domain.use_cases.user.delete_by_id import DeleteUserByIdUC
+from app.domain.use_cases.user.get_by_id import GetUserByIdUC
+from app.domain.use_cases.user.get_list import GetUserListUC
+from app.domain.use_cases.user.update_by_id import UpdateUserByIdUC
 from app.presenters.rest.routers.api.v1.schemas.user import (
     CreateUserSchema,
     UpdateUserSchema,
@@ -32,18 +35,17 @@ router = APIRouter(prefix="/users", tags=["Users"], route_class=DishkaRoute)
 async def create(
     create_data: CreateUserSchema,
     *,
-    service: FromDishka[UserService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[CreateUserUC],
 ) -> UserSchema:
-    async with uow:
-        result = await service.create(
+    return UserSchema.model_validate(
+        await use_case.execute(
             input_dto=CreateUser(**create_data.model_dump()),
         )
-    return UserSchema.model_validate(result)
+    )
 
 
 @router.get(
-    "/{user_id}/",
+    "/{user_id:uuid}/",
     response_model=UserSchema,
     status_code=HTTPStatus.OK,
     name="Get User by ID",
@@ -51,12 +53,9 @@ async def create(
 async def get_by_id(
     user_id: UUID,
     *,
-    service: FromDishka[UserService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[GetUserByIdUC],
 ) -> UserSchema:
-    async with uow:
-        result = await service.get_by_id(input_id=user_id)
-    return UserSchema.model_validate(result)
+    return UserSchema.model_validate(await use_case.execute(input_dto=user_id))
 
 
 @router.get(
@@ -68,18 +67,17 @@ async def get_by_id(
 async def get_list(
     params: UserListParamsSchema = Query(),
     *,
-    service: FromDishka[UserService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[GetUserListUC],
 ) -> UserListSchema:
-    async with uow:
-        result = await service.get_list(
+    return UserListSchema.model_validate(
+        await use_case.execute(
             input_dto=UserListParams(**params.model_dump()),
         )
-    return UserListSchema.model_validate(result)
+    )
 
 
 @router.patch(
-    "/{user_id}/",
+    "/{user_id:uuid}/",
     response_model=UserSchema,
     status_code=HTTPStatus.OK,
     name="Update User by ID",
@@ -88,29 +86,26 @@ async def update_by_id(
     user_id: UUID,
     update_data: UpdateUserSchema,
     *,
-    service: FromDishka[UserService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[UpdateUserByIdUC],
 ) -> UserSchema:
     values = update_data.model_dump(exclude_unset=True)
     if not values:
         raise EmptyPayloadException(message="No values to update")
-    async with uow:
-        result = await service.update_by_id(
+    return UserSchema.model_validate(
+        await use_case.execute(
             input_dto=UpdateUser(id=user_id, **values),
         )
-    return UserSchema.model_validate(result)
+    )
 
 
 @router.delete(
-    "/{user_id}/",
+    "/{user_id:uuid}/",
     status_code=HTTPStatus.NO_CONTENT,
     name="Delete User by ID",
 )
 async def delete_by_id(
     user_id: UUID,
     *,
-    service: FromDishka[UserService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[DeleteUserByIdUC],
 ) -> None:
-    async with uow:
-        await service.delete_by_id(input_id=user_id)
+    await use_case.execute(input_dto=user_id)

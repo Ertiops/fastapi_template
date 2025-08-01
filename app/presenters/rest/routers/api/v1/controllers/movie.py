@@ -5,13 +5,16 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Query
 
 from app.application.exceptions import EmptyPayloadException
-from app.domains.entities.movie import (
+from app.domain.entities.movie import (
     CreateMovie,
     MovieListParams,
     UpdateMovie,
 )
-from app.domains.services.movie import MovieService
-from app.domains.uow import AbstractUow
+from app.domain.use_cases.movie.create import CreateMovieUC
+from app.domain.use_cases.movie.delete_by_id import DeleteMovieByIdUC
+from app.domain.use_cases.movie.get_by_id import GetMovieByIdUC
+from app.domain.use_cases.movie.get_list import GetMovieListUC
+from app.domain.use_cases.movie.update_by_id import UpdateMovieByIdUC
 from app.presenters.rest.routers.api.v1.schemas.movie import (
     CreateMovieSchema,
     MovieListParamsSchema,
@@ -32,16 +35,15 @@ router = APIRouter(prefix="/movies", tags=["Movies"], route_class=DishkaRoute)
 async def create(
     create_data: CreateMovieSchema,
     *,
-    service: FromDishka[MovieService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[CreateMovieUC],
 ) -> MovieSchema:
-    async with uow:
-        result = await service.create(input_dto=CreateMovie(**create_data.model_dump()))
-    return MovieSchema.model_validate(result)
+    return MovieSchema.model_validate(
+        await use_case.execute(input_dto=CreateMovie(**create_data.model_dump()))
+    )
 
 
 @router.get(
-    "/{movie_id}/",
+    "/{movie_id:uuid}/",
     response_model=MovieSchema,
     status_code=HTTPStatus.OK,
     name="Get Movie by ID",
@@ -49,12 +51,9 @@ async def create(
 async def get_by_id(
     movie_id: UUID,
     *,
-    service: FromDishka[MovieService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[GetMovieByIdUC],
 ) -> MovieSchema:
-    async with uow:
-        result = await service.get_by_id(input_id=movie_id)
-    return MovieSchema.model_validate(result)
+    return MovieSchema.model_validate(await use_case.execute(input_dto=movie_id))
 
 
 @router.get(
@@ -66,18 +65,17 @@ async def get_by_id(
 async def get_list(
     params: MovieListParamsSchema = Query(),
     *,
-    service: FromDishka[MovieService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[GetMovieListUC],
 ) -> MovieListSchema:
-    async with uow:
-        result = await service.get_list(
+    return MovieListSchema.model_validate(
+        await use_case.execute(
             input_dto=MovieListParams(limit=params.limit, offset=params.offset)
         )
-    return MovieListSchema.model_validate(result)
+    )
 
 
 @router.patch(
-    "/{movie_id}/",
+    "/{movie_id:uuid}/",
     response_model=MovieSchema,
     status_code=HTTPStatus.OK,
     name="Update Movie by ID",
@@ -86,29 +84,26 @@ async def update_by_id(
     movie_id: UUID,
     update_data: UpdateMovieSchema,
     *,
-    service: FromDishka[MovieService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[UpdateMovieByIdUC],
 ) -> MovieSchema:
     values = update_data.model_dump(exclude_unset=True)
     if not values:
         raise EmptyPayloadException(message="No values to update")
-    async with uow:
-        result = await service.update_by_id(
+    return MovieSchema.model_validate(
+        await use_case.execute(
             input_dto=UpdateMovie(id=movie_id, **values),
         )
-    return MovieSchema.model_validate(result)
+    )
 
 
 @router.delete(
-    "/{movie_id}/",
+    "/{movie_id:uuid}/",
     status_code=HTTPStatus.NO_CONTENT,
     name="Delete Movie by ID",
 )
 async def delete_by_id(
     movie_id: UUID,
     *,
-    service: FromDishka[MovieService],
-    uow: FromDishka[AbstractUow],
+    use_case: FromDishka[DeleteMovieByIdUC],
 ) -> None:
-    async with uow:
-        await service.delete_by_id(input_id=movie_id)
+    await use_case.execute(input_dto=movie_id)

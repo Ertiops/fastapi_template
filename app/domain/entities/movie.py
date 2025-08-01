@@ -5,7 +5,7 @@ from enum import StrEnum, unique
 from uuid import UUID
 
 from app.application.entities import UNSET, Unset
-from app.domains.entities.common import Pagination, ToDictMixin
+from app.domain.entities.common import Pagination, ToDictMixin
 
 
 @unique

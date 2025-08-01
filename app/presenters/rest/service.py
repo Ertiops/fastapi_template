@@ -16,7 +16,7 @@ from app.application.exceptions import (
     EntityAlreadyExistsException,
     EntityNotFoundException,
 )
-from app.domains.di import DomainProvider
+from app.domain.di import DomainProvider
 from app.presenters.rest.config import RestConfig
 from app.presenters.rest.routers.api.router import router as api_router
 from app.presenters.rest.routers.api.v1.exception_handlers import (

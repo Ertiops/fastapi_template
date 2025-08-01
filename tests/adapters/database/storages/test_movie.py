@@ -10,7 +10,7 @@ from app.application.exceptions import (
     EntityAlreadyExistsException,
     EntityNotFoundException,
 )
-from app.domains.entities.movie import (
+from app.domain.entities.movie import (
     CreateMovie,
     Movie,
     MovieGenre,
@@ -244,10 +244,23 @@ async def test__update_by_id(
     )
 
 
-async def test__update_by_id__none(movie_storage: MovieStorage) -> None:
+async def test__update_by_id__entity_not_found_exception(
+    movie_storage: MovieStorage,
+) -> None:
     with pytest.raises(EntityNotFoundException):
         await movie_storage.update_by_id(
             input_dto=UpdateMovie(id=uuid4(), title="test_title")
+        )
+
+
+async def test__update_by_id__entity_not_found_exception__deleted(
+    movie_storage: MovieStorage,
+    create_movie: Callable,
+) -> None:
+    db_movie: MovieTable = await create_movie(deleted_at=now_utc())
+    with pytest.raises(EntityNotFoundException):
+        await movie_storage.update_by_id(
+            input_dto=UpdateMovie(id=db_movie.id, title="test_title")
         )
 
 

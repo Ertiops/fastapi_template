@@ -1,0 +1,36 @@
+from collections.abc import Callable
+from uuid import uuid4
+
+import pytest
+
+from app.adapters.database.tables import UserTable
+from app.application.exceptions import (
+    EntityNotFoundException,
+)
+from app.domain.use_cases.user.delete_by_id import DeleteUserByIdUC
+from tests.utils import now_utc
+
+
+async def test__delete_by_id(
+    delete_user_by_id_uc: DeleteUserByIdUC,
+    create_user: Callable,
+) -> None:
+    db_user: UserTable = await create_user()
+    await delete_user_by_id_uc.execute(input_dto=db_user.id)
+    assert db_user.deleted_at is not None
+
+
+async def test__delete_by_id__entity_not_found_exception(
+    delete_user_by_id_uc: DeleteUserByIdUC,
+) -> None:
+    with pytest.raises(EntityNotFoundException):
+        await delete_user_by_id_uc.execute(input_dto=uuid4())
+
+
+async def test__delete_by_id__entity_not_found_exception__deleted(
+    delete_user_by_id_uc: DeleteUserByIdUC,
+    create_user: Callable,
+) -> None:
+    db_user: UserTable = await create_user(deleted_at=now_utc())
+    with pytest.raises(EntityNotFoundException):
+        await delete_user_by_id_uc.execute(input_dto=db_user.id)

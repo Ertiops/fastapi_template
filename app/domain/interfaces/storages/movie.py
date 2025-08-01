@@ -3,29 +3,29 @@ from collections.abc import Sequence
 from typing import Protocol
 from uuid import UUID
 
-from app.domains.entities.user import (
-    CreateUser,
-    UpdateUser,
-    User,
-    UserListParams,
+from app.domain.entities.movie import (
+    CreateMovie,
+    Movie,
+    MovieListParams,
+    UpdateMovie,
 )
 
 
-class IUserStorage(Protocol):
+class IMovieStorage(Protocol):
     @abstractmethod
-    async def create(self, *, input_dto: CreateUser) -> User:
+    async def create(self, *, input_dto: CreateMovie) -> Movie:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_id(self, *, input_id: UUID) -> User | None:
+    async def get_by_id(self, *, input_id: UUID) -> Movie | None:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_list(self, *, input_dto: UserListParams) -> Sequence[User]:
+    async def get_list(self, *, input_dto: MovieListParams) -> Sequence[Movie]:
         raise NotImplementedError
 
     @abstractmethod
-    async def count(self, *, input_dto: UserListParams) -> int:
+    async def count(self, *, input_dto: MovieListParams) -> int:
         raise NotImplementedError
 
     @abstractmethod
@@ -33,7 +33,7 @@ class IUserStorage(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def update_by_id(self, *, input_dto: UpdateUser) -> User:
+    async def update_by_id(self, *, input_dto: UpdateMovie) -> Movie:
         raise NotImplementedError
 
     @abstractmethod
