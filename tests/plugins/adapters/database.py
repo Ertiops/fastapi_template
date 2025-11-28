@@ -8,11 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from app.adapters.database.config import DatabaseConfig
 from app.adapters.database.tables import BaseTable
+from app.adapters.database.uow import SqlalchemyUow
 from app.adapters.database.utils import (
     create_engine,
     create_sessionmaker,
     make_alembic_config,
 )
+from app.domain.uow import AbstractUow
 from tests.utils import run_async_migrations, truncate_tables
 
 
@@ -51,6 +53,11 @@ async def engine(
 @pytest.fixture
 def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return create_sessionmaker(engine=engine)
+
+
+@pytest.fixture
+async def uow(session_factory: async_sessionmaker[AsyncSession]) -> AbstractUow:
+    return SqlalchemyUow(session=session_factory())
 
 
 @pytest.fixture

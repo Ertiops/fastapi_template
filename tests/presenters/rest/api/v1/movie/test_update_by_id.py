@@ -8,7 +8,7 @@ from dirty_equals import IsStr
 from httpx import AsyncClient
 
 from app.adapters.database.tables import MovieTable
-from app.domains.entities.movie import MovieGenre
+from app.domain.entities.movie import MovieGenre
 from tests.utils import now_utc
 
 

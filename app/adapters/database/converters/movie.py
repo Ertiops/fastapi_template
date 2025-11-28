@@ -1,5 +1,5 @@
 from app.adapters.database.tables import MovieTable
-from app.domains.entities.movie import Movie
+from app.domain.entities.movie import Movie
 
 
 def convert_movie_table_to_dto(

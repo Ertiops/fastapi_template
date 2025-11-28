@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from typing import Protocol
 from uuid import UUID
 
-from app.domains.entities.user import (
+from app.domain.entities.user import (
     CreateUser,
     UpdateUser,
     User,
@@ -17,7 +17,7 @@ class IUserStorage(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_id(self, *, input_id: UUID) -> User | None:
+    async def get_by_id(self, *, input_dto: UUID) -> User | None:
         raise NotImplementedError
 
     @abstractmethod
@@ -29,7 +29,7 @@ class IUserStorage(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def exists_by_id(self, *, input_id: UUID) -> bool:
+    async def exists_by_id(self, *, input_dto: UUID) -> bool:
         raise NotImplementedError
 
     @abstractmethod
@@ -37,5 +37,5 @@ class IUserStorage(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_by_id(self, *, input_id: UUID) -> None:
+    async def delete_by_id(self, *, input_dto: UUID) -> None:
         raise NotImplementedError

@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from datetime import UTC, datetime
 from typing import NoReturn
 from uuid import UUID
 
@@ -7,6 +6,7 @@ from sqlalchemy import exists, func, insert, select, update
 from sqlalchemy.exc import DBAPIError, IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.adapters.database.base import now_with_tz
 from app.adapters.database.converters.movie import convert_movie_table_to_dto
 from app.adapters.database.tables import MovieTable
 from app.application.exceptions import (
@@ -14,13 +14,13 @@ from app.application.exceptions import (
     EntityNotFoundException,
     StorageException,
 )
-from app.domains.entities.movie import (
+from app.domain.entities.movie import (
     CreateMovie,
     Movie,
     MovieListParams,
     UpdateMovie,
 )
-from app.domains.interfaces.storages.movie import IMovieStorage
+from app.domain.interfaces.storages.movie import IMovieStorage
 
 
 class MovieStorage(IMovieStorage):
@@ -35,9 +35,9 @@ class MovieStorage(IMovieStorage):
             self.__raise_exception(e)
         return convert_movie_table_to_dto(result=result)
 
-    async def get_by_id(self, *, input_id: UUID) -> Movie | None:
+    async def get_by_id(self, *, input_dto: UUID) -> Movie | None:
         stmt = select(MovieTable).where(
-            MovieTable.id == input_id,
+            MovieTable.id == input_dto,
             MovieTable.deleted_at.is_(None),
         )
         result = await self.__session.scalar(stmt)
@@ -62,16 +62,19 @@ class MovieStorage(IMovieStorage):
         )
         return await self.__session.scalar(stmt) or 0
 
-    async def exists_by_id(self, *, input_id: UUID) -> bool:
+    async def exists_by_id(self, *, input_dto: UUID) -> bool:
         stmt = select(
-            exists().where(MovieTable.id == input_id, MovieTable.deleted_at.is_(None))
+            exists().where(MovieTable.id == input_dto, MovieTable.deleted_at.is_(None))
         )
         return bool(await self.__session.scalar(stmt))
 
     async def update_by_id(self, *, input_dto: UpdateMovie) -> Movie:
         stmt = (
             update(MovieTable)
-            .where(MovieTable.id == input_dto.id)
+            .where(
+                MovieTable.id == input_dto.id,
+                MovieTable.deleted_at.is_(None),
+            )
             .values(**input_dto.to_dict())
             .returning(MovieTable)
         )
@@ -83,11 +86,11 @@ class MovieStorage(IMovieStorage):
             self.__raise_exception(e)
         return convert_movie_table_to_dto(result=result)
 
-    async def delete_by_id(self, *, input_id: UUID) -> None:
+    async def delete_by_id(self, *, input_dto: UUID) -> None:
         stmt = (
             update(MovieTable)
-            .where(MovieTable.id == input_id)
-            .values(deleted_at=datetime.now(tz=UTC))
+            .where(MovieTable.id == input_dto)
+            .values(deleted_at=now_with_tz())
         )
         await self.__session.execute(stmt)
 

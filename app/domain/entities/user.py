@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID
 
 from app.application.entities import UNSET, Unset
-from app.domains.entities.common import Pagination, ToDictMixin
+from app.domain.entities.common import Pagination, ToDictMixin
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)

@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import Field, PositiveInt
 
-from app.domains.entities.movie import MovieGenre
+from app.domain.entities.movie import MovieGenre
 from app.presenters.rest.schemas import BaseSchema, PaginationSchema
 
 

@@ -7,9 +7,9 @@ from app.adapters.database.storages.movie import MovieStorage
 from app.adapters.database.storages.user import UserStorage
 from app.adapters.database.uow import SqlalchemyUow
 from app.adapters.database.utils import create_engine, create_sessionmaker
-from app.domains.interfaces.storages.movie import IMovieStorage
-from app.domains.interfaces.storages.user import IUserStorage
-from app.domains.uow import AbstractUow
+from app.domain.interfaces.storages.movie import IMovieStorage
+from app.domain.interfaces.storages.user import IUserStorage
+from app.domain.uow import AbstractUow
 
 
 class DatabaseProvider(Provider):

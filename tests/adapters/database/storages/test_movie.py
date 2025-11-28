@@ -10,7 +10,7 @@ from app.application.exceptions import (
     EntityAlreadyExistsException,
     EntityNotFoundException,
 )
-from app.domains.entities.movie import (
+from app.domain.entities.movie import (
     CreateMovie,
     Movie,
     MovieGenre,
@@ -69,7 +69,7 @@ async def test__get_by_id(
     create_movie: Callable,
 ) -> None:
     db_movie: MovieTable = await create_movie()
-    movie = await movie_storage.get_by_id(input_id=db_movie.id)
+    movie = await movie_storage.get_by_id(input_dto=db_movie.id)
     assert movie == Movie(
         id=db_movie.id,
         title=db_movie.title,
@@ -85,7 +85,7 @@ async def test__get_by_id(
 
 
 async def test__get_by_id__none(movie_storage: MovieStorage) -> None:
-    assert await movie_storage.get_by_id(input_id=uuid4()) is None
+    assert await movie_storage.get_by_id(input_dto=uuid4()) is None
 
 
 async def test_get_by_id__deleted(
@@ -93,7 +93,7 @@ async def test_get_by_id__deleted(
     create_movie: Callable,
 ) -> None:
     db_movie: MovieTable = await create_movie(deleted_at=now_utc())
-    assert await movie_storage.get_by_id(input_id=db_movie.id) is None
+    assert await movie_storage.get_by_id(input_dto=db_movie.id) is None
 
 
 async def test__get_list(
@@ -199,11 +199,11 @@ async def test__exists_by_id(
     create_movie: Callable,
 ) -> None:
     db_movie: MovieTable = await create_movie()
-    assert await movie_storage.exists_by_id(input_id=db_movie.id)
+    assert await movie_storage.exists_by_id(input_dto=db_movie.id)
 
 
 async def test__exists_by_id__false(movie_storage: MovieStorage) -> None:
-    assert await movie_storage.exists_by_id(input_id=uuid4()) is False
+    assert await movie_storage.exists_by_id(input_dto=uuid4()) is False
 
 
 async def test__exists_by_id__deleted(
@@ -211,7 +211,7 @@ async def test__exists_by_id__deleted(
     create_movie: Callable,
 ) -> None:
     db_movie: MovieTable = await create_movie(deleted_at=now_utc())
-    assert await movie_storage.exists_by_id(input_id=db_movie.id) is False
+    assert await movie_storage.exists_by_id(input_dto=db_movie.id) is False
 
 
 async def test__update_by_id(
@@ -244,10 +244,23 @@ async def test__update_by_id(
     )
 
 
-async def test__update_by_id__none(movie_storage: MovieStorage) -> None:
+async def test__update_by_id__entity_not_found_exception(
+    movie_storage: MovieStorage,
+) -> None:
     with pytest.raises(EntityNotFoundException):
         await movie_storage.update_by_id(
             input_dto=UpdateMovie(id=uuid4(), title="test_title")
+        )
+
+
+async def test__update_by_id__entity_not_found_exception__deleted(
+    movie_storage: MovieStorage,
+    create_movie: Callable,
+) -> None:
+    db_movie: MovieTable = await create_movie(deleted_at=now_utc())
+    with pytest.raises(EntityNotFoundException):
+        await movie_storage.update_by_id(
+            input_dto=UpdateMovie(id=db_movie.id, title="test_title")
         )
 
 
@@ -273,5 +286,5 @@ async def test__delete_by_id(
     create_movie: Callable,
 ) -> None:
     db_movie: MovieTable = await create_movie()
-    await movie_storage.delete_by_id(input_id=db_movie.id)
+    await movie_storage.delete_by_id(input_dto=db_movie.id)
     assert db_movie.deleted_at is not None
