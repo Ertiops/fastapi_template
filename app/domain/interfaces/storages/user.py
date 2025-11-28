@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from collections.abc import Sequence
 from typing import Protocol
 from uuid import UUID
@@ -12,30 +11,23 @@ from app.domain.entities.user import (
 
 
 class IUserStorage(Protocol):
-    @abstractmethod
     async def create(self, *, input_dto: CreateUser) -> User:
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
     async def get_by_id(self, *, input_dto: UUID) -> User | None:
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
     async def get_list(self, *, input_dto: UserListParams) -> Sequence[User]:
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
     async def count(self, *, input_dto: UserListParams) -> int:
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
     async def exists_by_id(self, *, input_dto: UUID) -> bool:
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
     async def update_by_id(self, *, input_dto: UpdateUser) -> User:
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
     async def delete_by_id(self, *, input_dto: UUID) -> None:
-        raise NotImplementedError
+        pass
