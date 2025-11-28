@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 
 import pytest
@@ -27,7 +27,7 @@ class UserTableFactory(SQLAlchemyFactory[UserTable]):
 
 
 @pytest.fixture
-def create_user(session: AsyncSession) -> Callable:
+def create_user(session: AsyncSession) -> Callable[..., Awaitable[UserTable]]:
     async def _factory(**kwargs) -> UserTable:
         user: UserTable = UserTableFactory.build(**kwargs)
         session.add(user)

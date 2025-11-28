@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
 import pytest
 from dirty_equals import IsDatetime, IsUUID
@@ -28,9 +28,9 @@ async def test__create(
 
 async def test__create__entity_already_exists_exception__username(
     create_user_uc: CreateUserUC,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     with pytest.raises(EntityAlreadyExistsException):
         await create_user_uc.execute(
             input_dto=CreateUser(
@@ -42,9 +42,9 @@ async def test__create__entity_already_exists_exception__username(
 
 async def test__create__entity_already_exists_exception__email(
     create_user_uc: CreateUserUC,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     with pytest.raises(EntityAlreadyExistsException):
         await create_user_uc.execute(
             input_dto=CreateUser(

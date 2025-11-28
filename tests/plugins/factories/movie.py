@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 
 import pytest
@@ -24,7 +24,7 @@ class MovieTableFactory(SQLAlchemyFactory[MovieTable]):
 
 
 @pytest.fixture
-def create_movie(session: AsyncSession) -> Callable:
+def create_movie(session: AsyncSession) -> Callable[..., Awaitable[MovieTable]]:
     async def _factory(**kwargs) -> MovieTable:
         movie: MovieTable = MovieTableFactory.build(**kwargs)
         session.add(movie)

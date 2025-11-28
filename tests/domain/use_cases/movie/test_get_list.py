@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from uuid import UUID
 
 from app.adapters.database.tables import MovieTable
@@ -12,11 +12,9 @@ from app.domain.use_cases.movie.get_list import GetMovieListUC
 
 async def test__get_list(
     get_movie_list_uc: GetMovieListUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movies: list[MovieTable] = [
-        await create_movie(id=UUID(int=i + 1)) for i in range(2)
-    ]
+    db_movies = [await create_movie(id=UUID(int=i + 1)) for i in range(2)]
     movies = await get_movie_list_uc.execute(
         input_dto=MovieListParams(limit=10, offset=0)
     )
@@ -42,11 +40,9 @@ async def test__get_list(
 
 async def test__get_list__validate_limit(
     get_movie_list_uc: GetMovieListUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movies: list[MovieTable] = [
-        await create_movie(id=UUID(int=i + 1)) for i in range(2)
-    ]
+    db_movies = [await create_movie(id=UUID(int=i + 1)) for i in range(2)]
     movies = await get_movie_list_uc.execute(
         input_dto=MovieListParams(limit=1, offset=0)
     )
@@ -72,11 +68,9 @@ async def test__get_list__validate_limit(
 
 async def test__get_list__validate_offset(
     get_movie_list_uc: GetMovieListUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movies: list[MovieTable] = [
-        await create_movie(id=UUID(int=i + 1)) for i in range(2)
-    ]
+    db_movies = [await create_movie(id=UUID(int=i + 1)) for i in range(2)]
     movies = await get_movie_list_uc.execute(
         input_dto=MovieListParams(limit=2, offset=1)
     )

@@ -1,4 +1,4 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from http import HTTPStatus
 from typing import Any
 from uuid import UUID, uuid4
@@ -46,9 +46,9 @@ async def test__update_by_id__not_found(client: AsyncClient) -> None:
 
 async def test__update_by_id__ok__status(
     client: AsyncClient,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     response = await client.patch(
         api_url(db_user.id),
         json=dict(username="test_username"),
@@ -58,9 +58,9 @@ async def test__update_by_id__ok__status(
 
 async def test__update_by_id__ok__format(
     client: AsyncClient,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     json_data = dict(
         username="test_username",
         email="test@test.com",
@@ -86,12 +86,12 @@ async def test__update_by_id__ok__format(
     ),
 )
 async def test__update_by_id__conflict__duplicates(
+    create_user: Callable[..., Awaitable[UserTable]],
     client: AsyncClient,
-    create_user: Callable,
     json_data: Mapping[str, Any],
 ) -> None:
     await create_user(**json_data)
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     response = await client.patch(
         api_url(db_user.id),
         json=json_data,

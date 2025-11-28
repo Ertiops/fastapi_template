@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from http import HTTPStatus
 from uuid import UUID, uuid4
 
@@ -20,19 +20,19 @@ async def test__get_by_id__not_found__status(client: AsyncClient) -> None:
 
 
 async def test__get_by_id__ok__status(
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
     client: AsyncClient,
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     response = await client.get(api_url(db_user.id))
     assert response.status_code == HTTPStatus.OK
 
 
 async def test__get_by_id__ok__format(
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
     client: AsyncClient,
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     response = await client.get(api_url(db_user.id))
     assert response.json() == dict(
         id=str(db_user.id),

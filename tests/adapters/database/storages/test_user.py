@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from uuid import uuid4
 
 import pytest
@@ -38,9 +38,9 @@ async def test__create(
 
 async def test__create__entity_already_exists_exception__username(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     with pytest.raises(EntityAlreadyExistsException):
         await user_storage.create(
             input_dto=CreateUser(
@@ -52,9 +52,9 @@ async def test__create__entity_already_exists_exception__username(
 
 async def test__create__entity_already_exists_exception__email(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     with pytest.raises(EntityAlreadyExistsException):
         await user_storage.create(
             input_dto=CreateUser(
@@ -66,9 +66,9 @@ async def test__create__entity_already_exists_exception__email(
 
 async def test__get_by_id(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     user = await user_storage.get_by_id(input_dto=db_user.id)
     assert user == User(
         id=db_user.id,
@@ -85,17 +85,17 @@ async def test__get_by_id__none(user_storage: UserStorage) -> None:
 
 async def test__get_by_id__deleted(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user(deleted_at=now_utc())
+    db_user = await create_user(deleted_at=now_utc())
     assert await user_storage.get_by_id(input_dto=db_user.id) is None
 
 
 async def test__get_list(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_users: list[UserTable] = [await create_user() for _ in range(2)]
+    db_users = [await create_user() for _ in range(2)]
     users = await user_storage.get_list(input_dto=UserListParams(limit=10, offset=0))
     assert users == [
         User(
@@ -111,9 +111,9 @@ async def test__get_list(
 
 async def test__get_list__validate_limit(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     await create_user()
     users = await user_storage.get_list(input_dto=UserListParams(limit=1, offset=0))
     assert users == [
@@ -129,10 +129,10 @@ async def test__get_list__validate_limit(
 
 async def test__get_list__validate_offset(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
     await create_user()
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     users = await user_storage.get_list(input_dto=UserListParams(limit=10, offset=1))
     assert users == [
         User(
@@ -154,7 +154,7 @@ async def test__get_list__empty_list(
 
 async def test__count(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
     await create_user()
     assert await user_storage.count(input_dto=UserListParams(limit=10, offset=0)) == 1
@@ -166,8 +166,11 @@ async def test__count__zero(
     assert await user_storage.count(input_dto=UserListParams(limit=10, offset=0)) == 0
 
 
-async def test__exists_by_id(user_storage: UserStorage, create_user: Callable) -> None:
-    db_user: UserTable = await create_user()
+async def test__exists_by_id(
+    user_storage: UserStorage,
+    create_user: Callable[..., Awaitable[UserTable]],
+) -> None:
+    db_user = await create_user()
     assert await user_storage.exists_by_id(input_dto=db_user.id)
 
 
@@ -177,17 +180,17 @@ async def test__exists_by_id__false(user_storage: UserStorage) -> None:
 
 async def test__exists_by_id__deleted(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user(deleted_at=now_utc())
+    db_user = await create_user(deleted_at=now_utc())
     assert await user_storage.exists_by_id(input_dto=db_user.id) is False
 
 
 async def test__update_by_id(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     update_data = UpdateUser(
         id=db_user.id,
         username="test_username",
@@ -214,9 +217,9 @@ async def test__update_by_id__entity_not_found_exception(
 
 async def test__update_by_id__entity_not_found_exception__deleted(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user(deleted_at=now_utc())
+    db_user = await create_user(deleted_at=now_utc())
     with pytest.raises(EntityNotFoundException):
         await user_storage.update_by_id(
             input_dto=UpdateUser(id=db_user.id, username="test_username")
@@ -225,9 +228,9 @@ async def test__update_by_id__entity_not_found_exception__deleted(
 
 async def test__delete_by_id(
     user_storage: UserStorage,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     await user_storage.delete_by_id(input_dto=db_user.id)
     assert db_user.deleted_at is not None
 

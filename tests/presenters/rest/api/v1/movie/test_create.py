@@ -1,4 +1,4 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from http import HTTPStatus
 from typing import Any
 
@@ -79,9 +79,9 @@ async def test__create__ok__format(client: AsyncClient) -> None:
 
 async def test__create__duplicate__conflict(
     client: AsyncClient,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie(year=now_utc().year)
+    db_movie = await create_movie(year=now_utc().year)
     response = await client.post(
         API_URL,
         json=dict(

@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from http import HTTPStatus
 from uuid import UUID, uuid4
 
@@ -18,16 +18,18 @@ async def test__get_by_id__not_found__status(client: AsyncClient) -> None:
 
 
 async def test__get_by_id__ok__status(
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
     client: AsyncClient,
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     response = await client.get(api_url(db_movie.id))
     assert response.status_code == HTTPStatus.OK
 
 
-async def test__get_by_id__ok__format(create_movie, client: AsyncClient) -> None:
-    db_movie: MovieTable = await create_movie()
+async def test__get_by_id__ok__format(
+    create_movie: Callable[..., Awaitable[MovieTable]], client: AsyncClient
+) -> None:
+    db_movie = await create_movie()
     response = await client.get(api_url(db_movie.id))
     assert response.json() == dict(
         id=str(db_movie.id),

@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from uuid import uuid4
 
 import pytest
@@ -18,9 +18,9 @@ from tests.utils import now_utc
 
 async def test__update_by_id(
     update_user_by_id_uc: UpdateUserByIdUC,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user()
+    db_user = await create_user()
     update_data = UpdateUser(
         id=db_user.id,
         username="test_username",
@@ -47,9 +47,9 @@ async def test__update_by_id__entity_not_found_exception(
 
 async def test__update_by_id__entity_not_found_exception__deleted(
     update_user_by_id_uc: UpdateUserByIdUC,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user(deleted_at=now_utc())
+    db_user = await create_user(deleted_at=now_utc())
     with pytest.raises(EntityNotFoundException):
         await update_user_by_id_uc.execute(
             input_dto=UpdateUser(id=db_user.id, username="test_username")

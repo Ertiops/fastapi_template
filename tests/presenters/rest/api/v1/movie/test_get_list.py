@@ -1,4 +1,4 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from http import HTTPStatus
 from typing import Any
 from uuid import UUID
@@ -37,11 +37,9 @@ async def test__get_list__ok__status(client: AsyncClient) -> None:
 
 async def test__get_list__ok__format(
     client: AsyncClient,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movies: list[MovieTable] = [
-        await create_movie(id=UUID(int=i + 1)) for i in range(2)
-    ]
+    db_movies = [await create_movie(id=UUID(int=i + 1)) for i in range(2)]
     response = await client.get(API_URL)
     assert response.json() == dict(
         total=len(db_movies),
@@ -65,11 +63,9 @@ async def test__get_list__ok__format(
 
 async def test__get_list__validate_limit(
     client: AsyncClient,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movies: list[MovieTable] = [
-        await create_movie(id=UUID(int=i + 1)) for i in range(2)
-    ]
+    db_movies = [await create_movie(id=UUID(int=i + 1)) for i in range(2)]
     response = await client.get(API_URL, params=dict(limit=1))
     assert response.json() == dict(
         total=len(db_movies),
@@ -93,11 +89,9 @@ async def test__get_list__validate_limit(
 
 async def test__get_list__validate_offset(
     client: AsyncClient,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movies: list[MovieTable] = [
-        await create_movie(id=UUID(int=i + 1)) for i in range(2)
-    ]
+    db_movies = [await create_movie(id=UUID(int=i + 1)) for i in range(2)]
     response = await client.get(API_URL, params=dict(offset=1))
     assert response.json() == dict(
         total=len(db_movies),

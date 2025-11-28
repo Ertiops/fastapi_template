@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from uuid import uuid4
 
 import pytest
@@ -20,9 +20,9 @@ from tests.utils import now_utc
 
 async def test__update_by_id(
     update_movie_by_id_uc: UpdateMovieByIdUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     update_data = UpdateMovie(
         id=db_movie.id,
         title="test_title",
@@ -62,9 +62,9 @@ async def test__update_by_id__entity_not_found_exception(
 
 async def test__update_by_id__entity_not_found_exception__deleted(
     update_movie_by_id_uc: UpdateMovieByIdUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie(deleted_at=now_utc())
+    db_movie = await create_movie(deleted_at=now_utc())
     with pytest.raises(EntityNotFoundException):
         await update_movie_by_id_uc.execute(
             input_dto=UpdateMovie(id=db_movie.id, title="test_title")
@@ -73,10 +73,10 @@ async def test__update_by_id__entity_not_found_exception__deleted(
 
 async def test__update_by_id__entity_already_exists_exception(
     update_movie_by_id_uc: UpdateMovieByIdUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
-    db_movie_to_update: MovieTable = await create_movie()
+    db_movie = await create_movie()
+    db_movie_to_update = await create_movie()
     with pytest.raises(EntityAlreadyExistsException):
         await update_movie_by_id_uc.execute(
             input_dto=UpdateMovie(

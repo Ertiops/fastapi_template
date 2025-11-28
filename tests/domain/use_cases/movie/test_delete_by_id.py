@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from uuid import uuid4
 
 import pytest
@@ -13,9 +13,9 @@ from tests.utils import now_utc
 
 async def test__delete_by_id(
     delete_movie_by_id_uc: DeleteMovieByIdUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     await delete_movie_by_id_uc.execute(input_dto=db_movie.id)
     assert db_movie.deleted_at is not None
 
@@ -29,8 +29,8 @@ async def test__delete_by_id__entity_not_found_exception(
 
 async def test__delete_by_id__entity_not_found_exception__deleted(
     delete_movie_by_id_uc: DeleteMovieByIdUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie(deleted_at=now_utc())
+    db_movie = await create_movie(deleted_at=now_utc())
     with pytest.raises(EntityNotFoundException):
         await delete_movie_by_id_uc.execute(input_dto=db_movie.id)

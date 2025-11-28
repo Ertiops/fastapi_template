@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from uuid import UUID, uuid4
 
 import pytest
@@ -47,9 +47,9 @@ async def test__create(movie_storage: MovieStorage) -> None:
 
 async def test__create__entity_already_exists_exception(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     with pytest.raises(EntityAlreadyExistsException):
         await movie_storage.create(
             input_dto=CreateMovie(
@@ -66,9 +66,9 @@ async def test__create__entity_already_exists_exception(
 
 async def test__get_by_id(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     movie = await movie_storage.get_by_id(input_dto=db_movie.id)
     assert movie == Movie(
         id=db_movie.id,
@@ -90,19 +90,17 @@ async def test__get_by_id__none(movie_storage: MovieStorage) -> None:
 
 async def test_get_by_id__deleted(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie(deleted_at=now_utc())
+    db_movie = await create_movie(deleted_at=now_utc())
     assert await movie_storage.get_by_id(input_dto=db_movie.id) is None
 
 
 async def test__get_list(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movies: list[MovieTable] = [
-        await create_movie(id=UUID(int=i + 1)) for i in range(2)
-    ]
+    db_movies = [await create_movie(id=UUID(int=i + 1)) for i in range(2)]
     movies = await movie_storage.get_list(input_dto=MovieListParams(limit=10, offset=0))
     assert movies == [
         Movie(
@@ -123,11 +121,9 @@ async def test__get_list(
 
 async def test__get_list__validate_limit(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movies: list[MovieTable] = [
-        await create_movie(id=UUID(int=i + 1)) for i in range(2)
-    ]
+    db_movies = [await create_movie(id=UUID(int=i + 1)) for i in range(2)]
     assert await movie_storage.get_list(
         input_dto=MovieListParams(limit=1, offset=0)
     ) == [
@@ -148,7 +144,7 @@ async def test__get_list__validate_limit(
 
 async def test__get_list__validate_offset(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
     db_movies: list[MovieTable] = [
         await create_movie(id=UUID(int=i + 1)) for i in range(2)
@@ -182,7 +178,7 @@ async def test__get_list__empty_list(
 
 async def test__count(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
     await create_movie()
     assert await movie_storage.count(input_dto=MovieListParams(limit=10, offset=0)) == 1
@@ -196,9 +192,9 @@ async def test__count__zero(
 
 async def test__exists_by_id(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     assert await movie_storage.exists_by_id(input_dto=db_movie.id)
 
 
@@ -208,17 +204,17 @@ async def test__exists_by_id__false(movie_storage: MovieStorage) -> None:
 
 async def test__exists_by_id__deleted(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie(deleted_at=now_utc())
+    db_movie = await create_movie(deleted_at=now_utc())
     assert await movie_storage.exists_by_id(input_dto=db_movie.id) is False
 
 
 async def test__update_by_id(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     update_data = UpdateMovie(
         id=db_movie.id,
         title="test_title",
@@ -255,9 +251,9 @@ async def test__update_by_id__entity_not_found_exception(
 
 async def test__update_by_id__entity_not_found_exception__deleted(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie(deleted_at=now_utc())
+    db_movie = await create_movie(deleted_at=now_utc())
     with pytest.raises(EntityNotFoundException):
         await movie_storage.update_by_id(
             input_dto=UpdateMovie(id=db_movie.id, title="test_title")
@@ -266,10 +262,10 @@ async def test__update_by_id__entity_not_found_exception__deleted(
 
 async def test__update_by_id__entity_already_exists_exception(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
-    db_movie_to_update: MovieTable = await create_movie()
+    db_movie = await create_movie()
+    db_movie_to_update = await create_movie()
     with pytest.raises(EntityAlreadyExistsException):
         await movie_storage.update_by_id(
             input_dto=UpdateMovie(
@@ -283,8 +279,8 @@ async def test__update_by_id__entity_already_exists_exception(
 
 async def test__delete_by_id(
     movie_storage: MovieStorage,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     await movie_storage.delete_by_id(input_dto=db_movie.id)
     assert db_movie.deleted_at is not None
