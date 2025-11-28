@@ -15,7 +15,7 @@ def api_url(user_id: UUID = uuid4()) -> str:
 
 
 @pytest.mark.parametrize(
-    "json_data",
+    "body",
     (
         dict(username="t" * 2),
         dict(username="t" * 256),
@@ -23,7 +23,7 @@ def api_url(user_id: UUID = uuid4()) -> str:
     ),
 )
 async def test__update_by_id__unprocessable_entity(
-    client: AsyncClient, json_data: Mapping[str, Any]
+    client: AsyncClient, body: Mapping[str, Any]
 ) -> None:
     response = await client.patch(api_url())
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -61,25 +61,25 @@ async def test__update_by_id__ok__format(
     create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
     db_user = await create_user()
-    json_data = dict(
+    body = dict(
         username="test_username",
         email="test@test.com",
     )
     response = await client.patch(
         api_url(db_user.id),
-        json=json_data,
+        json=body,
     )
     assert response.json() == dict(
         id=str(db_user.id),
-        username=json_data.get("username"),
-        email=json_data.get("email"),
+        username=body.get("username"),
+        email=body.get("email"),
         created_at=IsStr,
         updated_at=IsStr,
     )
 
 
 @pytest.mark.parametrize(
-    "json_data",
+    "body",
     (
         dict(username="test_username"),
         dict(email="test@test.com"),
@@ -88,12 +88,12 @@ async def test__update_by_id__ok__format(
 async def test__update_by_id__conflict__duplicates(
     create_user: Callable[..., Awaitable[UserTable]],
     client: AsyncClient,
-    json_data: Mapping[str, Any],
+    body: Mapping[str, Any],
 ) -> None:
-    await create_user(**json_data)
+    await create_user(**body)
     db_user = await create_user()
     response = await client.patch(
         api_url(db_user.id),
-        json=json_data,
+        json=body,
     )
     assert response.status_code == HTTPStatus.CONFLICT

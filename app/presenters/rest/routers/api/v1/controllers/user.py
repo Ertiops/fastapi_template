@@ -33,13 +33,13 @@ router = APIRouter(prefix="/users", tags=["Users"], route_class=DishkaRoute)
     name="Create User",
 )
 async def create(
-    create_data: CreateUserSchema,
+    body: CreateUserSchema,
     *,
     use_case: FromDishka[CreateUserUC],
 ) -> UserSchema:
     return UserSchema.model_validate(
         await use_case.execute(
-            input_dto=CreateUser(**create_data.model_dump()),
+            input_dto=CreateUser(**body.model_dump()),
         )
     )
 
@@ -84,11 +84,11 @@ async def get_list(
 )
 async def update_by_id(
     user_id: UUID,
-    update_data: UpdateUserSchema,
+    body: UpdateUserSchema,
     *,
     use_case: FromDishka[UpdateUserByIdUC],
 ) -> UserSchema:
-    values = update_data.model_dump(exclude_unset=True)
+    values = body.model_dump(exclude_unset=True)
     if not values:
         raise EmptyPayloadException(message="No values to update")
     return UserSchema.model_validate(
