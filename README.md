@@ -20,7 +20,7 @@ A RESTful API service built with FastAPI that follows Clean Architecture princip
 
 ### 📥 Install Dependencies
 
-Use `poetry` to create a virtual environment and install dependencies:
+Use `uv` to create a virtual environment and install dependencies:
 
 ```bash
 make develop
@@ -67,9 +67,9 @@ make local-create-migrations
 Use these Makefile commands that mimic the CI process:
 
 ```bash
-make develop-ci  # Install dependencies
-make lint-ci     # Run ruff and mypy for linting and type checks
-make test-ci     # Run tests with pytest and collect coverage
+make develop  # Install dependencies
+make lint   # Run ruff and mypy for linting and type checks
+make test    # Run tests with pytest and collect coverage
 ```
 
 ## 📚 API Endpoints

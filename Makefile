@@ -1,57 +1,67 @@
 PROJECT_NAME = app
 TEST_FOLDER_NAME = tests
+TEST_PATH       := ./tests
+
+DOCKER_FILENAME := docker-compose.dev.yaml
 PYTHON_VERSION = 3.12
 
-develop: clean_dev ##@Develop Create virtualenv
+
+
+PIP      := .venv/bin/pip
+UV       := .venv/bin/uv
+RUFF     := $(UV) run .venv/bin/ruff
+MYPY     := $(UV) run .venv/bin/mypy
+PYTEST   := $(UV) run .venv/bin/pytest
+ALEMBIC  := $(UV) run $(PYTHON) -m $(PROJECT_NAME).adapters.database
+COVERAGE := $(UV) run .venv/bin/coverage
+
+clean_dev: ## Remove virtual environment
+	rm -rf .venv
+
+venv: clean_dev ## Create venv
 	python$(PYTHON_VERSION) -m venv .venv
-	.venv/bin/pip install -U pip poetry
-	.venv/bin/poetry config virtualenvs.create false
-	.venv/bin/poetry install
-	.venv/bin/pre-commit install
 
-local: ##@Develop Run dev containers for test
-	docker compose -f docker-compose.dev.yaml up --force-recreate --renew-anon-volumes --build
+develop: venv  ## Create venv, install tools & pre-commit
+	$(PIP) install uv
+	$(UV) sync
+	UV_PROJECT_ENVIRONMENT=.venv $(UV) sync --python $(PYTHON_VERSION) --dev
+	$(UV) run pre-commit install
 
-local_down: ##@Develop Stop dev containers with delete volumes
-	docker compose -f docker-compose.dev.yaml down -v
+local: ## Start local stack (build & recreate)
+	docker compose -f $(DOCKER_FILENAME) up --build --force-recreate --remove-orphans --renew-anon-volumes
+
+local_down: ## Stop local stack and remove volumes
+	docker compose -f $(DOCKER_FILENAME) down -v
 
 local-create-migrations:
-	.venv/bin/python -m $(PROJECT_NAME).adapters.database revision --autogenerate
+	$(ALEMBIC) revision --autogenerate
 
 local-apply-migrations:
-	.venv/bin/python -m $(PROJECT_NAME).adapters.database upgrade head
+	$(ALEMBIC) upgrade head
 
 local-delete-migrations:
 	find $(PROJECT_NAME)/adapters/database/migrations/versions -type f ! -name '__init__.py' -delete
 
-develop-ci: ##@Develop Create virtualenv for CI
-	python -m pip install -U pip poetry
-	poetry config virtualenvs.create false
-	poetry install --no-root
+local-recreate-migrations: local-delete-migrations ## Recreate alembic migrations
+	$(ALEMBIC) revision --autogenerate
+	$(ALEMBIC) upgrade head
 
-test-ci: ##@Test Run tests with pytest and coverage in CI
-	pytest ./$(TEST_FOLDER_NAME) --junitxml=./junit.xml --cov=./$(PROJECT_NAME) --cov-report=xml
+test: ## Run tests with verbose output and auto-parallelism
+	$(PYTEST) -vx $(TEST_PATH) -vv
 
-lint-ci: ruff mypy ##@Linting Run all linters in CI
+format: ## Format code with ruff
+	$(RUFF) format .
+	$(RUFF) check --fix .
 
-ruff: ##@Linting Run ruff
-	ruff check ./$(PROJECT_NAME)
+ruff: ## Run ruff linter only
+	$(RUFF) check ./$(PROJECT_NAME)
 
-mypy: ##@Linting Run mypy
-	mypy --config-file ./pyproject.toml ./$(PROJECT_NAME) --enable-incomplete-feature=NewGenericSyntax
+mypy: ## Run mypy type checker
+	$(MYPY) ./$(PROJECT_NAME)
 
-alembic_init: ##@Database Run alembic init for async
-	.venv/bin/alembic init -t async ./$(PROJECT_NAME)/adapters/database/migrations
+lint: format mypy ## Full lint cycle (format + mypy) - local use only
 
-clean_dev: ##@Develop Remove virtualenv
-	rm -rf .venv
 
-HELP_FUN = \
-	%help; while(<>){push@{$$help{$$2//'options'}},[$$1,$$3] \
-	if/^([\w-_]+)\s*:.*\#\#(?:@(\w+))?\s(.*)$$/}; \
-    print"$$_:\n", map"  $$_->[0]".(" "x(20-length($$_->[0])))."$$_->[1]\n",\
-    @{$$help{$$_}},"\n" for keys %help; \
-
-help: ##@Help Show this help
-	@echo -e "Usage: make [target] ... \n"
-	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
+help: ## Show this help
+	@echo "Available commands:"
+	@grep -E "^[a-zA-Z_-]+:.*##" $(MAKEFILE_LIST) | sed "s/:.*##/ /"
