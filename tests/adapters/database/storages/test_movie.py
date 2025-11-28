@@ -88,7 +88,7 @@ async def test__get_by_id__none(movie_storage: MovieStorage) -> None:
     assert await movie_storage.get_by_id(input_dto=uuid4()) is None
 
 
-async def test_get_by_id__deleted(
+async def test__get_by_id__deleted(
     movie_storage: MovieStorage,
     create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
