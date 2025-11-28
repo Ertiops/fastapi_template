@@ -17,7 +17,7 @@ def api_url(movie_id: UUID = uuid4()) -> str:
 
 
 @pytest.mark.parametrize(
-    "json_data",
+    "body",
     (
         dict(title="t" * 2),
         dict(title="t" * 256),
@@ -29,9 +29,9 @@ def api_url(movie_id: UUID = uuid4()) -> str:
     ),
 )
 async def test__update_by_id__unprocessable_entity(
-    client: AsyncClient, json_data: Mapping[str, Any]
+    client: AsyncClient, body: Mapping[str, Any]
 ) -> None:
-    response = await client.patch(api_url(), json=json_data)
+    response = await client.patch(api_url(), json=body)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
@@ -67,7 +67,7 @@ async def test__update_by_id__ok__format(
     create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
     db_movie = await create_movie()
-    json_data = dict(
+    body = dict(
         title="test_title",
         description="test_description",
         year=now_utc().year,
@@ -76,16 +76,16 @@ async def test__update_by_id__ok__format(
         duration_minutes=100,
         rating=4.5,
     )
-    response = await client.patch(api_url(db_movie.id), json=json_data)
+    response = await client.patch(api_url(db_movie.id), json=body)
     assert response.json() == dict(
         id=str(db_movie.id),
-        title=json_data.get("title"),
-        description=json_data.get("description"),
-        year=json_data.get("year"),
-        director=json_data.get("director"),
-        genre=json_data.get("genre"),
-        duration_minutes=json_data.get("duration_minutes"),
-        rating=json_data.get("rating"),
+        title=body.get("title"),
+        description=body.get("description"),
+        year=body.get("year"),
+        director=body.get("director"),
+        genre=body.get("genre"),
+        duration_minutes=body.get("duration_minutes"),
+        rating=body.get("rating"),
         created_at=IsStr,
         updated_at=IsStr,
     )

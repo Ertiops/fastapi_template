@@ -12,7 +12,7 @@ API_URL = "/api/v1/users/"
 
 
 @pytest.mark.parametrize(
-    "json_data",
+    "body",
     (
         dict(
             username="test_username",
@@ -38,9 +38,9 @@ API_URL = "/api/v1/users/"
 )
 async def test__create__unprocessable_entity(
     client: AsyncClient,
-    json_data: Mapping[str, Any],
+    body: Mapping[str, Any],
 ) -> None:
-    response = await client.post(API_URL, json=json_data)
+    response = await client.post(API_URL, json=body)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
@@ -56,18 +56,18 @@ async def test__create__ok__status(client: AsyncClient) -> None:
 
 
 async def test__create__ok__format(client: AsyncClient) -> None:
-    json_data = dict(
+    body = dict(
         username="test_username",
         email="test@test.com",
     )
     response = await client.post(
         API_URL,
-        json=json_data,
+        json=body,
     )
     assert response.json() == dict(
         id=IsStr,
-        username=json_data.get("username"),
-        email=json_data.get("email"),
+        username=body.get("username"),
+        email=body.get("email"),
         created_at=IsStr,
         updated_at=IsStr,
     )

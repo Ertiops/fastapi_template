@@ -33,12 +33,12 @@ router = APIRouter(prefix="/movies", tags=["Movies"], route_class=DishkaRoute)
     name="Create Movie",
 )
 async def create(
-    create_data: CreateMovieSchema,
+    body: CreateMovieSchema,
     *,
     use_case: FromDishka[CreateMovieUC],
 ) -> MovieSchema:
     return MovieSchema.model_validate(
-        await use_case.execute(input_dto=CreateMovie(**create_data.model_dump()))
+        await use_case.execute(input_dto=CreateMovie(**body.model_dump()))
     )
 
 
@@ -82,11 +82,11 @@ async def get_list(
 )
 async def update_by_id(
     movie_id: UUID,
-    update_data: UpdateMovieSchema,
+    body: UpdateMovieSchema,
     *,
     use_case: FromDishka[UpdateMovieByIdUC],
 ) -> MovieSchema:
-    values = update_data.model_dump(exclude_unset=True)
+    values = body.model_dump(exclude_unset=True)
     if not values:
         raise EmptyPayloadException(message="No values to update")
     return MovieSchema.model_validate(
