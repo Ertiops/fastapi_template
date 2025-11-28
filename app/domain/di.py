@@ -2,7 +2,6 @@ from dishka import Provider, Scope, provide
 
 from app.domain.interfaces.storages.movie import IMovieStorage
 from app.domain.interfaces.storages.user import IUserStorage
-from app.domain.services.movie import MovieService
 from app.domain.uow import AbstractUow
 from app.domain.use_cases.movie.create import CreateMovieUC
 from app.domain.use_cases.movie.delete_by_id import DeleteMovieByIdUC
@@ -17,10 +16,6 @@ from app.domain.use_cases.user.update_by_id import UpdateUserByIdUC
 
 
 class DomainProvider(Provider):
-    @provide(scope=Scope.REQUEST)
-    def movie_service(self, movie_storage: IMovieStorage) -> MovieService:
-        return MovieService(movie_storage=movie_storage)
-
     @provide(scope=Scope.REQUEST)
     def create_user(
         self,
