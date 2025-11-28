@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from uuid import uuid4
 
 import pytest
@@ -16,9 +16,9 @@ from tests.utils import now_utc
 
 async def test__get_by_id(
     get_movie_by_id_uc: GetMovieByIdUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     movie = await get_movie_by_id_uc.execute(input_dto=db_movie.id)
     assert movie == Movie(
         id=db_movie.id,
@@ -43,8 +43,8 @@ async def test__get_by_id__entity_not_found_exception(
 
 async def test__get_by_id__entity_not_found_exception__deleted(
     get_movie_by_id_uc: GetMovieByIdUC,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie(deleted_at=now_utc())
+    db_movie = await create_movie(deleted_at=now_utc())
     with pytest.raises(EntityNotFoundException):
         await get_movie_by_id_uc.execute(input_dto=db_movie.id)

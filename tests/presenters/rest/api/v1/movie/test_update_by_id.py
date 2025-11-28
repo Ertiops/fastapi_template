@@ -1,4 +1,4 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from http import HTTPStatus
 from typing import Any
 from uuid import UUID, uuid4
@@ -52,9 +52,9 @@ async def test__update_by_id__not_found(client: AsyncClient) -> None:
 
 async def test__update_by_id__ok__status(
     client: AsyncClient,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     response = await client.patch(
         api_url(db_movie.id),
         json=dict(title="test_movie"),
@@ -64,9 +64,9 @@ async def test__update_by_id__ok__status(
 
 async def test__update_by_id__ok__format(
     client: AsyncClient,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie()
+    db_movie = await create_movie()
     json_data = dict(
         title="test_title",
         description="test_description",
@@ -93,10 +93,10 @@ async def test__update_by_id__ok__format(
 
 async def test__update_by_id__conflict__duplicate(
     client: AsyncClient,
-    create_movie: Callable,
+    create_movie: Callable[..., Awaitable[MovieTable]],
 ) -> None:
-    db_movie: MovieTable = await create_movie(year=now_utc().year)
-    db_movie_to_update: MovieTable = await create_movie()
+    db_movie = await create_movie(year=now_utc().year)
+    db_movie_to_update = await create_movie()
     response = await client.patch(
         api_url(db_movie_to_update.id),
         json=dict(

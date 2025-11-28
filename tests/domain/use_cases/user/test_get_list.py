@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
 from app.adapters.database.tables import UserTable
 from app.domain.entities.user import (
@@ -11,9 +11,9 @@ from app.domain.use_cases.user.get_list import GetUserListUC
 
 async def test__get_list(
     get_user_list_uc: GetUserListUC,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_users: list[UserTable] = [await create_user() for _ in range(2)]
+    db_users = [await create_user() for _ in range(2)]
     users = await get_user_list_uc.execute(input_dto=UserListParams(limit=10, offset=0))
     assert users == UserList(
         total=len(db_users),
@@ -32,9 +32,9 @@ async def test__get_list(
 
 async def test__get_list__validate_limit(
     get_user_list_uc: GetUserListUC,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_users: list[UserTable] = [await create_user() for _ in range(2)]
+    db_users = [await create_user() for _ in range(2)]
     users = await get_user_list_uc.execute(input_dto=UserListParams(limit=1, offset=0))
     assert users == UserList(
         total=len(db_users),
@@ -53,9 +53,9 @@ async def test__get_list__validate_limit(
 
 async def test__get_list__validate_offset(
     get_user_list_uc: GetUserListUC,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_users: list[UserTable] = [await create_user() for _ in range(2)]
+    db_users = [await create_user() for _ in range(2)]
     users = await get_user_list_uc.execute(input_dto=UserListParams(limit=1, offset=1))
     assert users == UserList(
         total=len(db_users),

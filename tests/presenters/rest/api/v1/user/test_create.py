@@ -1,4 +1,4 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from http import HTTPStatus
 from typing import Any
 
@@ -75,9 +75,9 @@ async def test__create__ok__format(client: AsyncClient) -> None:
 
 async def test_create_user__conflict__duplicate__email(
     client: AsyncClient,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user(email="email@example.com")
+    db_user = await create_user(email="email@example.com")
     response = await client.post(
         API_URL,
         json=dict(
@@ -90,9 +90,9 @@ async def test_create_user__conflict__duplicate__email(
 
 async def test_create_user__conflict__duplicate__username(
     client: AsyncClient,
-    create_user: Callable,
+    create_user: Callable[..., Awaitable[UserTable]],
 ) -> None:
-    db_user: UserTable = await create_user(username="test_username")
+    db_user = await create_user(username="test_username")
     response = await client.post(
         API_URL,
         json=dict(
