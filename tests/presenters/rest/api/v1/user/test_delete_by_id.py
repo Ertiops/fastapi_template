@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.tables import UserTable
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 def api_url(user_id: UUID = uuid4()) -> str:

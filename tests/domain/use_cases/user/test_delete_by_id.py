@@ -8,7 +8,7 @@ from app.application.exceptions import (
     EntityNotFoundException,
 )
 from app.domain.use_cases.user.delete_by_id import DeleteUserByIdUC
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 async def test__delete_by_id(

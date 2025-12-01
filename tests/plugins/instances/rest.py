@@ -1,22 +1,34 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import pytest
-from fastapi import FastAPI
-from httpx import ASGITransport, AsyncClient
+from aiomisc.service.uvicorn import UvicornApplication
+from httpx import URL, ASGITransport, AsyncClient
 
 from app.presenters.rest.config import RestConfig
 from app.presenters.rest.service import RestService
 
 
-@pytest.fixture
-def app(rest_config: RestConfig) -> FastAPI:
-    return RestService(config=rest_config).create_application()
+@pytest.fixture(scope="session")
+def rest_base_url() -> URL:
+    return URL(scheme="http", host="127.0.0.1", port=8000)
 
 
-@pytest.fixture
-async def client(app: FastAPI, engine) -> AsyncIterator[AsyncClient]:
+@pytest.fixture(scope="session")
+async def test_app(rest_config: RestConfig, rest_base_url: URL) -> UvicornApplication:
+    service = RestService(
+        host=rest_base_url.host,
+        port=rest_base_url.port,
+        config=rest_config,
+    )
+    return await service.create_application()
+
+
+@pytest.fixture(scope="session")
+async def client(
+    test_app: UvicornApplication, rest_base_url: URL
+) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://testserver",
+        transport=ASGITransport(app=test_app), base_url=rest_base_url
     ) as client:
         yield client

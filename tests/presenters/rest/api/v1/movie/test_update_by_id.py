@@ -9,7 +9,7 @@ from httpx import AsyncClient
 
 from app.adapters.database.tables import MovieTable
 from app.domain.entities.movie import MovieGenre
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 def api_url(movie_id: UUID = uuid4()) -> str:

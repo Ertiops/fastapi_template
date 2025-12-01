@@ -62,6 +62,10 @@ mypy: ## Run mypy type checker
 lint: format mypy ## Full lint cycle (format + mypy) - local use only
 
 
+app: ## Start uvicorn in reload mode
+	$(UV) run python -m $(PROJECT_NAME)
+
+
 help: ## Show this help
 	@echo "Available commands:"
 	@grep -E "^[a-zA-Z_-]+:.*##" $(MAKEFILE_LIST) | sed "s/:.*##/ /"

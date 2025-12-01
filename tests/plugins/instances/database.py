@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncIterator
 from os import environ
 from types import SimpleNamespace
@@ -15,10 +16,18 @@ from app.adapters.database.utils import (
     make_alembic_config,
 )
 from app.domain.uow import AbstractUow
-from tests.utils import run_async_migrations, truncate_tables
+from tests.utils.db import run_async_migrations, truncate_tables
 
 
-@pytest.fixture
+@pytest.fixture(scope="session", autouse=True)
+def event_loop():
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(scope="session")
 def db_config() -> DatabaseConfig:
     return DatabaseConfig(
         dsn=environ.get(
@@ -28,7 +37,7 @@ def db_config() -> DatabaseConfig:
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def alembic_config(db_config: DatabaseConfig) -> AlembicConfig:
     cmd_options = SimpleNamespace(
         config="alembic.ini",
@@ -39,23 +48,24 @@ def alembic_config(db_config: DatabaseConfig) -> AlembicConfig:
     return make_alembic_config(cmd_options, pg_url=db_config.dsn)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def engine(
     alembic_config: AlembicConfig,
     db_config: DatabaseConfig,
 ) -> AsyncIterator[AsyncEngine]:
-    await run_async_migrations(alembic_config, BaseTable.metadata, "head")
     async with create_engine(dsn=db_config.dsn, debug=True) as engine:
-        await truncate_tables(engine)
+        await run_async_migrations(
+            alembic_config, BaseTable.metadata, "head", engine=engine
+        )
         yield engine
 
 
-@pytest.fixture
-def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+@pytest.fixture(scope="session")
+async def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return create_sessionmaker(engine=engine)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def uow(session_factory: async_sessionmaker[AsyncSession]) -> AbstractUow:
     return SqlalchemyUow(session=session_factory())
 
@@ -65,5 +75,6 @@ async def session(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> AsyncIterator[AsyncSession]:
     async with session_factory() as session:
+        await truncate_tables(session)
         yield session
         await session.rollback()

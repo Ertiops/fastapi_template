@@ -17,7 +17,7 @@ from app.domain.entities.movie import (
     MovieListParams,
     UpdateMovie,
 )
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 async def test__create(movie_storage: MovieStorage) -> None:
