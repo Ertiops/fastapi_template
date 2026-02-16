@@ -48,6 +48,7 @@ class UserStorage(IUserStorage):
             .where(UserTable.deleted_at.is_(None))
             .limit(input_dto.limit)
             .offset(input_dto.offset)
+            .order_by(UserTable.created_at, UserTable.id)
         )
         result = await self.__session.scalars(stmt)
         return [convert_user_table_to_dto(result=r) for r in result]
