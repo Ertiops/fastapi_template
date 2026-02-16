@@ -33,6 +33,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      APP_DB_DSN: postgresql+asyncpg://app:app@127.0.0.1:5432/app
 
     services:
       postgres:
@@ -80,4 +82,3 @@ jobs:
           path: |
             coverage.xml
             junit.xml
-
