@@ -5,35 +5,45 @@ from alembic.config import Config as AlembicConfig
 from alembic.runtime.environment import EnvironmentContext
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import Connection, MetaData, TextClause, pool, text
+from sqlalchemy import Connection, MetaData, pool, text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
-    AsyncSession,
     async_engine_from_config,
 )
 
-TRUNCATE_TABLE_SQL: Final[TextClause] = text("""
+TRUNCATE_TABLE_SQL: Final[str] = """
 DO $$
+DECLARE
+    stmt text;
 BEGIN
     PERFORM pg_advisory_lock(424242);
-    EXECUTE (
-        SELECT 'TRUNCATE TABLE ' || string_agg(
-            format('%I.%I', schemaname, tablename), ', '
-        ) || ' RESTART IDENTITY CASCADE'
-        FROM pg_tables
-        WHERE schemaname = 'public'
-        AND tablename <> 'alembic_version'
-    );
+
+    SELECT
+        'TRUNCATE TABLE ' ||
+        string_agg(format('%I.%I', schemaname, tablename), ', ') ||
+        ' RESTART IDENTITY CASCADE'
+    INTO stmt
+    FROM pg_tables
+    WHERE schemaname = '{schema}'
+      AND tablename <> 'alembic_version';
+
+    IF stmt IS NOT NULL THEN
+        EXECUTE stmt;
+    END IF;
+
     PERFORM pg_advisory_unlock(424242);
+
 EXCEPTION
     WHEN UNDEFINED_TABLE THEN
+        PERFORM pg_advisory_unlock(424242);
         NULL;
 END $$;
-""")
+"""
 
 
-async def truncate_tables(session: AsyncSession) -> None:
-    await session.execute(TRUNCATE_TABLE_SQL)
+async def truncate_tables(engine: AsyncEngine, schema_name: str) -> None:
+    async with engine.connect() as connection:
+        await connection.execute(text(TRUNCATE_TABLE_SQL.format(schema=schema_name)))
 
 
 async def run_async_migrations(
@@ -67,6 +77,7 @@ async def run_async_migrations(
                 target_metadata=target_metadata,
                 context=context,
             )
+            await connection.commit()
 
 
 def _do_run_migrations(

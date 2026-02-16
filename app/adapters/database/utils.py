@@ -19,13 +19,16 @@ PROJECT_PATH: Final = Path(__file__).parent.parent.parent
 
 
 @asynccontextmanager
-async def create_engine(dsn: str, debug: bool) -> AsyncIterator[AsyncEngine]:
+async def create_engine(
+    dsn: str, debug: bool, **kwargs: Any
+) -> AsyncIterator[AsyncEngine]:
     engine = create_async_engine(
         url=dsn,
         echo=debug,
         pool_size=15,
         max_overflow=10,
         pool_pre_ping=True,
+        **kwargs,
     )
     yield engine
     await engine.dispose()

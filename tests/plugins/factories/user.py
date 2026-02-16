@@ -19,8 +19,7 @@ def create_user(session: AsyncSession) -> Callable[..., Awaitable[UserTable]]:
     async def _factory(**kwargs) -> UserTable:
         user: UserTable = UserTableFactory.build(**kwargs)
         session.add(user)
-        await session.commit()
-        await session.refresh(user)
+        await session.flush()
         return user
 
     return _factory

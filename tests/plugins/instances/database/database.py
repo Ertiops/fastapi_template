@@ -5,18 +5,23 @@ from types import SimpleNamespace
 
 import pytest
 from alembic.config import Config as AlembicConfig
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from app.adapters.database.config import DatabaseConfig
 from app.adapters.database.tables import BaseTable
-from app.adapters.database.uow import SqlalchemyUow
 from app.adapters.database.utils import (
     create_engine,
     create_sessionmaker,
     make_alembic_config,
 )
-from app.domain.uow import AbstractUow
 from tests.utils.db import run_async_migrations, truncate_tables
+from tests.utils.worker import get_worker_schema_name
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -49,14 +54,34 @@ def alembic_config(db_config: DatabaseConfig) -> AlembicConfig:
 
 
 @pytest.fixture(scope="session")
+async def engine_context(
+    db_config: DatabaseConfig,
+) -> None:
+    schema = get_worker_schema_name()
+    admin_engine = create_async_engine(db_config.dsn, future=True)
+    async with admin_engine.begin() as conn:
+        await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
+        await conn.commit()
+    await admin_engine.dispose()
+
+
+@pytest.fixture(scope="session")
 async def engine(
     alembic_config: AlembicConfig,
     db_config: DatabaseConfig,
+    engine_context: None,
 ) -> AsyncIterator[AsyncEngine]:
-    async with create_engine(dsn=db_config.dsn, debug=True) as engine:
+    schema = get_worker_schema_name()
+    async with create_engine(
+        dsn=db_config.dsn,
+        future=True,
+        debug=False,
+        connect_args={"server_settings": {"search_path": schema}},
+    ) as engine:
         await run_async_migrations(
             alembic_config, BaseTable.metadata, "head", engine=engine
         )
+        await truncate_tables(engine, schema_name=schema)
         yield engine
 
 
@@ -65,16 +90,10 @@ async def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSessio
     return create_sessionmaker(engine=engine)
 
 
-@pytest.fixture(scope="session")
-async def uow(session_factory: async_sessionmaker[AsyncSession]) -> AbstractUow:
-    return SqlalchemyUow(session=session_factory())
-
-
 @pytest.fixture
 async def session(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> AsyncIterator[AsyncSession]:
     async with session_factory() as session:
-        await truncate_tables(session)
         yield session
         await session.rollback()

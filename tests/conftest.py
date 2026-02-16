@@ -6,5 +6,6 @@ pytest_plugins = (
     "tests.plugins.use_cases.user",
     "tests.plugins.use_cases.movie",
     "tests.plugins.storages.database",
-    "tests.plugins.instances.database",
+    "tests.plugins.instances.database.database",
+    "tests.plugins.instances.database.uow",
 )

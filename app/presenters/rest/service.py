@@ -1,10 +1,10 @@
 import logging
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
-from typing import Final
+from typing import Any, Final
 
 from aiomisc.service.uvicorn import UvicornApplication, UvicornService
-from dishka import make_async_container
+from dishka import Provider, make_async_container
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,6 +43,10 @@ EXCEPTION_HANDLERS: Final[ExceptionHandlersType] = (
 
 class RestService(UvicornService):
     config: RestConfig
+
+    def __init__(self, *, extra_providers: Sequence[Provider] = (), **kwargs: Any):
+        self.extra_providers = extra_providers
+        super().__init__(**kwargs)
 
     async def create_application(self) -> UvicornApplication:
         self.__app = FastAPI(
@@ -87,6 +91,7 @@ class RestService(UvicornService):
                 debug=self.config.app.debug,
             ),
             DomainProvider(),
+            *self.extra_providers,
         )
         setup_dishka(container=container, app=self.__app)
 

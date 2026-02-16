@@ -1,6 +1,7 @@
 PROJECT_NAME = app
 TEST_FOLDER_NAME = tests
 TEST_PATH       := ./tests
+TEST_WORKERS    := 8
 
 DOCKER_FILENAME := docker-compose.dev.yaml
 PYTHON_VERSION = 3.12
@@ -47,7 +48,14 @@ local-recreate-migrations: local-delete-migrations ## Recreate alembic migration
 	$(ALEMBIC) upgrade head
 
 test: ## Run tests with verbose output and auto-parallelism
-	$(PYTEST) -vx $(TEST_PATH) -vv
+	$(PYTEST) -vx $(TEST_PATH) -vv -n $(TEST_WORKERS)
+
+test-ci: ## Run tests with coverage and junit report for CI (GitHub Actions)
+	$(COVERAGE) erase
+	$(COVERAGE) run -m pytest $(TEST_PATH) --junitxml=junit.xml -rs
+	$(COVERAGE) combine
+	$(COVERAGE) report
+	$(COVERAGE) xml -o coverage.xml
 
 format: ## Format code with ruff
 	$(RUFF) format .
@@ -60,6 +68,10 @@ mypy: ## Run mypy type checker
 	$(MYPY) ./$(PROJECT_NAME)
 
 lint: format mypy ## Full lint cycle (format + mypy) - local use only
+
+lint-ci: ## Run linters in CI without formatting
+	@$(MAKE) ruff
+	@$(MAKE) mypy
 
 
 app: ## Start uvicorn in reload mode

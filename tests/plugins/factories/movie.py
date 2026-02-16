@@ -17,8 +17,7 @@ def create_movie(session: AsyncSession) -> Callable[..., Awaitable[MovieTable]]:
     async def _factory(**kwargs) -> MovieTable:
         movie: MovieTable = MovieTableFactory.build(**kwargs)
         session.add(movie)
-        await session.commit()
-        await session.refresh(movie)
+        await session.flush()
         return movie
 
     return _factory
