@@ -29,6 +29,8 @@ dev = [
     "pyparsing>=3.2.4",
     "polyfactory>=2.22.2",
     "httpx>=0.28.1",
+    "asgiref>=3.11.0",
+    "pytest-xdist>=3.8.0",
 ]
 
 
@@ -41,8 +43,12 @@ addopts = "-p no:cacheprovider"
 
 [tool.coverage.run]
 branch = true
+parallel = true
 source = ["app"]
-command_line = "-m pytest"
+command_line = "-m pytest -n auto"
+omit = [
+    "__init__.py",
+]
 
 [tool.coverage.report]
 show_missing = true

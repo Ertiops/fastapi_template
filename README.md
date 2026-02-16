@@ -39,7 +39,13 @@ make local
 Make sure containers are running (make local), then execute:
 
 ```bash
-pytest -vx ./tests
+make test
+```
+
+For a manual parallel run:
+
+```bash
+.venv/bin/pytest -vx ./tests -vv -n 8
 ```
 
 ### 📈 Apply Database Migrations
@@ -68,9 +74,26 @@ Use these Makefile commands that mimic the CI process:
 
 ```bash
 make develop  # Install dependencies
-make lint   # Run ruff and mypy for linting and type checks
-make test    # Run tests with pytest and collect coverage
+make lint-ci  # Run ruff and mypy (CI lint stage)
+make test-ci  # Run tests with coverage + junit report (CI test stage)
 ```
+
+## 🚦 CI
+
+- GitHub Actions workflow: `.github/workflows/checks.yml`
+- Trigger: Pull Request into `dev`
+- Stages:
+  - `lint` -> `make lint-ci`
+  - `test` -> `make test-ci`
+- Test artifacts uploaded by CI:
+  - `coverage.xml`
+  - `junit.xml`
+
+## ⚡ Parallel Tests
+
+- Default local test command (`make test`) runs pytest with xdist: `-n 8`
+- CI test command (`make test-ci`) uses coverage + junit output; with current config it also runs tests in parallel (`[tool.coverage.run] command_line = "-m pytest -n auto"`)
+- Recommended: avoid running multiple independent pytest sessions against the same DB at the same time
 
 ## 📚 API Endpoints
 

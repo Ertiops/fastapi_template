@@ -11,7 +11,7 @@ from app.domain.entities.movie import (
     Movie,
 )
 from app.domain.use_cases.movie.get_by_id import GetMovieByIdUC
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 async def test__get_by_id(

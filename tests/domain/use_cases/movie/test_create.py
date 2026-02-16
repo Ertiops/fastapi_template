@@ -6,7 +6,7 @@ from app.domain.entities.movie import (
     MovieGenre,
 )
 from app.domain.use_cases.movie.create import CreateMovieUC
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 async def test__create(create_movie_uc: CreateMovieUC) -> None:

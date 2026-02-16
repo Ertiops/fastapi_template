@@ -11,7 +11,7 @@ from app.domain.entities.user import (
     User,
 )
 from app.domain.use_cases.user.get_by_id import GetUserByIdUC
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 async def test__get_by_id(

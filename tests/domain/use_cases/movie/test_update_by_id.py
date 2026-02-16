@@ -15,7 +15,7 @@ from app.domain.entities.movie import (
     UpdateMovie,
 )
 from app.domain.use_cases.movie.update_by_id import UpdateMovieByIdUC
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 async def test__update_by_id(

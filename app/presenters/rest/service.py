@@ -1,10 +1,10 @@
 import logging
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
-from typing import Final
+from typing import Any, Final
 
-from dishka import make_async_container
+from aiomisc.service.uvicorn import UvicornApplication, UvicornService
+from dishka import Provider, make_async_container
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,12 +41,15 @@ EXCEPTION_HANDLERS: Final[ExceptionHandlersType] = (
 )
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class RestService:
+class RestService(UvicornService):
     config: RestConfig
 
-    def create_application(self) -> FastAPI:
-        app = FastAPI(
+    def __init__(self, *, extra_providers: Sequence[Provider] = (), **kwargs: Any):
+        self.extra_providers = extra_providers
+        super().__init__(**kwargs)
+
+    async def create_application(self) -> UvicornApplication:
+        self.__app = FastAPI(
             debug=self.config.app.debug,
             title=self.config.app.title,
             description=self.config.app.description,
@@ -57,16 +60,16 @@ class RestService:
             lifespan=lifespan,
         )
 
-        self.set_middlewares(app=app)
-        self.set_routes(app=app)
-        self.set_exceptions(app=app)
-        self.set_dependencies(app=app)
+        self.set_middlewares()
+        self.set_routes()
+        self.set_exceptions()
+        self.set_dependencies()
 
         log.info("REST service app configured")
-        return app
+        return self.__app
 
-    def set_middlewares(self, app: FastAPI) -> None:
-        app.add_middleware(
+    def set_middlewares(self) -> None:
+        self.__app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
             allow_credentials=True,
@@ -74,22 +77,23 @@ class RestService:
             allow_headers=["*"],
         )
 
-    def set_routes(self, app: FastAPI) -> None:
-        app.include_router(api_router)
+    def set_routes(self) -> None:
+        self.__app.include_router(api_router)
 
-    def set_exceptions(self, app: FastAPI) -> None:
+    def set_exceptions(self) -> None:
         for exception, handler in EXCEPTION_HANDLERS:
-            app.add_exception_handler(exception, handler)
+            self.__app.add_exception_handler(exception, handler)
 
-    def set_dependencies(self, app: FastAPI) -> None:
+    def set_dependencies(self) -> None:
         container = make_async_container(
             DatabaseProvider(
                 dsn=self.config.database.dsn,
                 debug=self.config.app.debug,
             ),
             DomainProvider(),
+            *self.extra_providers,
         )
-        setup_dishka(container=container, app=app)
+        setup_dishka(container=container, app=self.__app)
 
 
 @asynccontextmanager

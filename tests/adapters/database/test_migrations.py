@@ -4,7 +4,7 @@ from alembic.script import ScriptDirectory
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.adapters.database.tables import BaseTable
-from tests.utils import get_diff_db_metadata
+from tests.utils.db import get_diff_db_metadata
 
 
 async def test__up_to_date(engine: AsyncEngine) -> None:

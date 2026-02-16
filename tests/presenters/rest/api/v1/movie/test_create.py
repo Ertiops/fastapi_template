@@ -8,7 +8,7 @@ from httpx import AsyncClient
 
 from app.adapters.database.tables import MovieTable
 from app.domain.entities.movie import MovieGenre
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 API_URL = "/api/v1/movies/"
 

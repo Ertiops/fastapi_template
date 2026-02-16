@@ -16,7 +16,7 @@ from app.domain.entities.user import (
     User,
     UserListParams,
 )
-from tests.utils import now_utc
+from tests.utils.common import now_utc
 
 
 async def test__create(
