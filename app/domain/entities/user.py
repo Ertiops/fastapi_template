@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
@@ -18,12 +17,6 @@ class User:
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class UserListParams(Pagination): ...
-
-
-@dataclass(frozen=True, kw_only=True, slots=True)
-class UserList:
-    total: int
-    items: Sequence[User]
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)

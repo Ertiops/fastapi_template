@@ -2,9 +2,9 @@ from collections.abc import Awaitable, Callable
 from uuid import UUID
 
 from app.adapters.database.tables import MovieTable
+from app.domain.entities.common import ItemList
 from app.domain.entities.movie import (
     Movie,
-    MovieList,
     MovieListParams,
 )
 from app.domain.use_cases.movie.get_list import GetMovieListUC
@@ -18,7 +18,7 @@ async def test__get_list(
     movies = await get_movie_list_uc.execute(
         input_dto=MovieListParams(limit=10, offset=0)
     )
-    assert movies == MovieList(
+    assert movies == ItemList(
         total=len(db_movies),
         items=[
             Movie(
@@ -46,7 +46,7 @@ async def test__get_list__validate_limit(
     movies = await get_movie_list_uc.execute(
         input_dto=MovieListParams(limit=1, offset=0)
     )
-    assert movies == MovieList(
+    assert movies == ItemList(
         total=len(db_movies),
         items=[
             Movie(
@@ -74,7 +74,7 @@ async def test__get_list__validate_offset(
     movies = await get_movie_list_uc.execute(
         input_dto=MovieListParams(limit=2, offset=1)
     )
-    assert movies == MovieList(
+    assert movies == ItemList(
         total=len(db_movies),
         items=[
             Movie(
@@ -98,4 +98,4 @@ async def test__get_list__empty_list(get_movie_list_uc: GetMovieListUC) -> None:
     movies = await get_movie_list_uc.execute(
         input_dto=MovieListParams(limit=2, offset=1)
     )
-    assert movies == MovieList(total=0, items=[])
+    assert movies == ItemList(total=0, items=[])

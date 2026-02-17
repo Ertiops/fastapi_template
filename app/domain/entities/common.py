@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, fields
 from typing import Any
 
@@ -9,6 +9,12 @@ from app.application.entities import Unset
 class Pagination:
     limit: int
     offset: int
+
+
+@dataclass(kw_only=True, slots=True, frozen=True)
+class ItemList[ItemType]:
+    total: int
+    items: Sequence[ItemType]
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)

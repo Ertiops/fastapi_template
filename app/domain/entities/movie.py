@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum, unique
@@ -49,12 +48,6 @@ class Movie:
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class MovieListParams(Pagination): ...
-
-
-@dataclass(frozen=True, kw_only=True, slots=True)
-class MovieList:
-    total: int
-    items: Sequence[Movie]
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
