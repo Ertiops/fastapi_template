@@ -1,10 +1,9 @@
-from collections.abc import Sequence
 from datetime import datetime
 from uuid import UUID
 
 from pydantic import EmailStr, Field
 
-from app.presenters.rest.schemas import BaseSchema, PaginationSchema
+from app.presenters.rest.schemas import BaseSchema, ItemListSchema, PaginationSchema
 
 
 class UserSchema(BaseSchema):
@@ -18,9 +17,7 @@ class UserSchema(BaseSchema):
 class UserListParamsSchema(PaginationSchema): ...
 
 
-class UserListSchema(BaseSchema):
-    total: int
-    items: Sequence[UserSchema]
+class UserListSchema(ItemListSchema[UserSchema]): ...
 
 
 class CreateUserSchema(BaseSchema):
