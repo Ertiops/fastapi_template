@@ -10,11 +10,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.adapters.database.di import DatabaseProvider
+from app.adapters.s3.di import S3Provider
 from app.application.exceptions import (
     AppException,
     EmptyPayloadException,
     EntityAlreadyExistsException,
     EntityNotFoundException,
+    ServiceUnavailableException,
 )
 from app.domain.di import DomainProvider
 from app.presenters.rest.config import RestConfig
@@ -25,6 +27,7 @@ from app.presenters.rest.routers.api.v1.exception_handlers import (
     entity_already_exists_exception_handler,
     entity_not_found_exception_handler,
     http_exception_handler,
+    service_unavailable_exception_handler,
 )
 
 log = logging.getLogger(__name__)
@@ -38,6 +41,7 @@ EXCEPTION_HANDLERS: Final[ExceptionHandlersType] = (
     (EntityNotFoundException, entity_not_found_exception_handler),
     (EmptyPayloadException, empty_payload_exception_handler),
     (EntityAlreadyExistsException, entity_already_exists_exception_handler),
+    (ServiceUnavailableException, service_unavailable_exception_handler),
 )
 
 
@@ -90,6 +94,7 @@ class RestService(UvicornService):
                 dsn=self.config.database.dsn,
                 debug=self.config.app.debug,
             ),
+            S3Provider(config=self.config.s3),
             DomainProvider(),
             *self.extra_providers,
         )

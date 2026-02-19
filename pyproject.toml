@@ -8,11 +8,14 @@ requires-python = ">=3.12"
 
 dependencies = [
     "aiomisc>=17.5.24,<18.0.0",
+    "aiobotocore>=2.24.2",
     "alembic==1.15.2",
     "asyncpg>=0.30.0",
     "adaptix>=3.0.0b9",
+    "botocore>=1.40.18",
     "dishka>=1.6.0",
     "fastapi>=0.116.1",
+    "python-multipart>=0.0.20",
     "sqlalchemy[asyncio]>=2.0.43",
     "uvicorn>=0.35.0",
     "pydantic[email]>=2.11.7",
@@ -107,5 +110,12 @@ no_implicit_optional = true
 [[tool.mypy.overrides]]
 module = [
     "asyncpg.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "aiobotocore.*",
+    "botocore.*",
 ]
 ignore_missing_imports = true

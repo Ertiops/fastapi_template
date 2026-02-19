@@ -1,8 +1,10 @@
 from dishka import Provider, Scope, provide
 
+from app.domain.interfaces.storages.file import IFileStorage
 from app.domain.interfaces.storages.movie import IMovieStorage
 from app.domain.interfaces.storages.user import IUserStorage
 from app.domain.uow import AbstractUow
+from app.domain.use_cases.file.upload import UploadFileUC
 from app.domain.use_cases.movie.create import CreateMovieUC
 from app.domain.use_cases.movie.delete_by_id import DeleteMovieByIdUC
 from app.domain.use_cases.movie.get_by_id import GetMovieByIdUC
@@ -16,6 +18,17 @@ from app.domain.use_cases.user.update_by_id import UpdateUserByIdUC
 
 
 class DomainProvider(Provider):
+    @provide(scope=Scope.REQUEST)
+    def upload_file(
+        self,
+        file_storage: IFileStorage,
+        uow: AbstractUow,
+    ) -> UploadFileUC:
+        return UploadFileUC(
+            file_storage=file_storage,
+            uow=uow,
+        )
+
     @provide(scope=Scope.REQUEST)
     def create_user(
         self,

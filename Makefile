@@ -52,7 +52,7 @@ test: ## Run tests with verbose output and auto-parallelism
 
 test-ci: ## Run tests with coverage and junit report for CI (GitHub Actions)
 	$(COVERAGE) erase
-	$(COVERAGE) run -m pytest $(TEST_PATH) --junitxml=junit.xml -rs
+	$(COVERAGE) run -m pytest $(TEST_PATH) --junitxml=junit.xml -rs -n auto
 	$(COVERAGE) combine
 	$(COVERAGE) report
 	$(COVERAGE) xml -o coverage.xml

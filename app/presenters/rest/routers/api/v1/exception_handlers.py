@@ -8,6 +8,7 @@ from app.application.exceptions import (
     EmptyPayloadException,
     EntityAlreadyExistsException,
     EntityNotFoundException,
+    ServiceUnavailableException,
 )
 from app.presenters.rest.schemas import StatusResponseSchema
 
@@ -55,6 +56,16 @@ async def entity_already_exists_exception_handler(
 ) -> JSONResponse:
     return exception_json_response(
         status_code=HTTPStatus.CONFLICT,
+        message=exc.message,
+    )
+
+
+async def service_unavailable_exception_handler(
+    request: Request,
+    exc: ServiceUnavailableException,
+) -> JSONResponse:
+    return exception_json_response(
+        status_code=HTTPStatus.SERVICE_UNAVAILABLE,
         message=exc.message,
     )
 

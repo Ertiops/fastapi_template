@@ -35,6 +35,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APP_DB_DSN: postgresql+asyncpg://app:app@127.0.0.1:5432/app
+      APP_S3_ACCESS_KEY: secret
+      APP_S3_SECRET_KEY: secret123
+      APP_S3_BUCKET: app
+      APP_S3_ENDPOINT_URL: http://127.0.0.1:9000
 
     services:
       postgres:
@@ -71,6 +75,23 @@ jobs:
 
       - name: Apply migrations
         run: make local-apply-migrations
+
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio \
+            -p 9000:9000 -p 9001:9001 \
+            -e MINIO_ROOT_USER=secret \
+            -e MINIO_ROOT_PASSWORD=secret123 \
+            minio/minio:latest server /data --console-address ":9001"
+
+      - name: Wait for MinIO
+        run: |
+          for i in {1..60}; do
+            curl -fsS http://127.0.0.1:9000/minio/health/live && exit 0
+            sleep 1
+          done
+          echo "MinIO did not become ready in time"
+          exit 1
 
       - name: Run tests with coverage
         run: make test-ci
