@@ -1,11 +1,10 @@
-from collections.abc import Sequence
 from datetime import UTC, datetime
 from uuid import UUID
 
 from pydantic import Field, PositiveInt
 
 from app.domain.entities.movie import MovieGenre
-from app.presenters.rest.schemas import BaseSchema, PaginationSchema
+from app.presenters.rest.schemas import BaseSchema, ItemListSchema, PaginationSchema
 
 
 class MovieSchema(BaseSchema):
@@ -24,9 +23,7 @@ class MovieSchema(BaseSchema):
 class MovieListParamsSchema(PaginationSchema): ...
 
 
-class MovieListSchema(BaseSchema):
-    total: int
-    items: Sequence[MovieSchema]
+class MovieListSchema(ItemListSchema[MovieSchema]): ...
 
 
 class CreateMovieSchema(BaseSchema):
