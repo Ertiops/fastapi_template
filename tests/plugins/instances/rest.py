@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.presenters.rest.config import RestConfig
 from app.presenters.rest.service import RestService
-from tests.plugins.instances.database.uow import TEST_SESSIONS, TestDBProvider
 from tests.utils.worker import get_worker_name
 
 
@@ -19,7 +18,7 @@ def rest_base_url() -> URL:
 
 @pytest.fixture(scope="session")
 async def test_app(
-    rest_config: RestConfig, rest_base_url: URL, test_db_provider: TestDBProvider
+    rest_config: RestConfig, rest_base_url: URL, test_db_provider: Any
 ) -> UvicornApplication:
     service = RestService(
         host=rest_base_url.host,
@@ -44,6 +43,8 @@ async def client_context(
 async def client(
     client_context: AsyncClient, session: AsyncSession
 ) -> AsyncIterator[AsyncClient]:
+    from tests.plugins.instances.database.uow import TEST_SESSIONS
+
     worker_name = get_worker_name()
     TEST_SESSIONS[worker_name] = session
     try:

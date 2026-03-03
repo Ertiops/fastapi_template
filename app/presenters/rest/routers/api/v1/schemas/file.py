@@ -1,5 +1,5 @@
-from pydantic import BaseModel
+from pydantic import AnyUrl, BaseModel
 
 
-class UploadedFileUrlSchema(BaseModel):
-    file_url: str
+class FileSchema(BaseModel):
+    url: AnyUrl

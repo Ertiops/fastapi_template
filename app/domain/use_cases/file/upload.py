@@ -1,10 +1,10 @@
 from app.application.use_case import IUseCase
-from app.domain.entities.file import S3User, UploadFileResult, UploadFileToStorage
+from app.domain.entities.file import CreateFile, File
 from app.domain.interfaces.storages.file import IFileStorage
 from app.domain.uow import AbstractUow
 
 
-class UploadFileUC(IUseCase[UploadFileToStorage, UploadFileResult]):
+class UploadFileUC(IUseCase[CreateFile, File]):
     _file_storage: IFileStorage
     _uow: AbstractUow
 
@@ -17,10 +17,7 @@ class UploadFileUC(IUseCase[UploadFileToStorage, UploadFileResult]):
         self._file_storage = file_storage
         self._uow = uow
 
-    async def execute(self, *, input_dto: UploadFileToStorage) -> UploadFileResult:
+    async def execute(self, *, input_dto: CreateFile) -> File:
         async with self._uow:
-            file_url = await self._file_storage.upload_file(
-                input_dto=input_dto,
-                user=S3User(id=None),
-            )
-        return UploadFileResult(file_url=file_url)
+            url = await self._file_storage.upload_file(input_dto=input_dto)
+        return File(url=url)

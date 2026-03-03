@@ -24,12 +24,11 @@ def rest_config(db_config: DatabaseConfig) -> RestConfig:
         database=db_config,
         s3=S3Config(
             access_key=getenv("APP_S3_ACCESS_KEY", "secret"),
-            secret_key=getenv("APP_S3_SECRET_KEY", "secret123"),
+            secret_key=getenv("APP_S3_SECRET_KEY", "secretsecret"),
             bucket=_worker_bucket_name(),
             endpoint_url=getenv("APP_S3_ENDPOINT_URL", "http://127.0.0.1:9000"),
             max_pool_connections=int(getenv("APP_S3_MAX_POOL_CONNECTIONS", 10)),
             max_attempts=int(getenv("APP_S3_MAX_ATTEMPTS", 5)),
-            multipart_chunk_size=int(getenv("APP_S3_MULTIPART_CHUNK_SIZE", 5242880)),
         ),
         secret=SecretConfig(),
     )

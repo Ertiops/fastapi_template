@@ -1,12 +1,12 @@
 from io import BytesIO
 
-from app.domain.entities.file import UploadFileToStorage
+from app.domain.entities.file import CreateFile
 from app.domain.use_cases.file.upload import UploadFileUC
 
 
 async def test__upload_file(upload_file_uc: UploadFileUC) -> None:
     result = await upload_file_uc.execute(
-        input_dto=UploadFileToStorage(
+        input_dto=CreateFile(
             entity="avatars",
             file=BytesIO(b"image"),
             content_type="image/png",
@@ -15,4 +15,4 @@ async def test__upload_file(upload_file_uc: UploadFileUC) -> None:
             metadata=None,
         )
     )
-    assert result.file_url.startswith("http")
+    assert result.url.scheme in {"http", "https"}

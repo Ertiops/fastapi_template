@@ -5,20 +5,17 @@ from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
 
+from yarl import URL
+
 from app.adapters.s3.client import S3Client
 from app.application.exceptions import S3ClientException, ServiceUnavailableException
 from app.domain.entities.file import (
     BuildFileKey,
     BuildFileUrl,
-    ConvertToRelativeKey,
+    CreateFile,
     FileInfo,
-    GetFileFromStorage,
-    GetFileInfoFromStorage,
-    GetFilesFromStorage,
-    RemoveFileFromStorage,
-    S3User,
+    GetFileList,
     UploadFileByKey,
-    UploadFileToStorage,
 )
 from app.domain.interfaces.storages.file import IFileStorage
 
@@ -31,7 +28,7 @@ class S3Storage(IFileStorage):
     def __init__(self, *, s3_client: S3Client) -> None:
         self.__s3_client = s3_client
 
-    async def upload_file(self, *, input_dto: UploadFileToStorage, user: S3User) -> str:
+    async def upload_file(self, *, input_dto: CreateFile) -> URL:
         file_ext = self._detect_extension(input_dto=input_dto)
         key = self.__s3_client.build_file_key(
             input_dto=BuildFileKey(
@@ -39,7 +36,6 @@ class S3Storage(IFileStorage):
                 file_id=uuid4(),
                 file_ext=file_ext,
             ),
-            user=user,
         )
 
         try:
@@ -51,11 +47,9 @@ class S3Storage(IFileStorage):
                     public_read=input_dto.public_read,
                     metadata=input_dto.metadata,
                 ),
-                user=user,
             )
             return self.__s3_client.get_external_url(
-                input_dto=GetFileFromStorage(key=key),
-                user=user,
+                key=key,
             )
         except S3ClientException as exc:
             log.error("Failed to upload file to S3: %s", exc)
@@ -63,15 +57,13 @@ class S3Storage(IFileStorage):
                 message="S3 is unavailable: failed to upload file."
             ) from exc
 
-    async def get_file(self, *, input_dto: GetFileFromStorage, user: S3User) -> BytesIO:
+    async def get_file(self, *, key: str | URL) -> BytesIO:
         relative_key = self.__s3_client.convert_to_relative_key(
-            input_dto=ConvertToRelativeKey(key=input_dto.key),
-            user=user,
+            key=key,
         )
         try:
             response = await self.__s3_client.get_file(
-                input_dto=GetFileFromStorage(key=relative_key),
-                user=user,
+                key=relative_key,
             )
             return BytesIO(await response["Body"].read())
         except S3ClientException as exc:
@@ -83,13 +75,11 @@ class S3Storage(IFileStorage):
     async def get_files(
         self,
         *,
-        input_dto: GetFilesFromStorage,
-        user: S3User,
+        input_dto: GetFileList,
     ) -> Sequence[BytesIO]:
         rel_keys = [
             self.__s3_client.convert_to_relative_key(
-                input_dto=ConvertToRelativeKey(key=key),
-                user=user,
+                key=key,
             )
             for key in input_dto.keys
         ]
@@ -97,8 +87,7 @@ class S3Storage(IFileStorage):
         try:
             for key in rel_keys:
                 response = await self.__s3_client.get_file(
-                    input_dto=GetFileFromStorage(key=key),
-                    user=user,
+                    key=key,
                 )
                 body = response["Body"]
                 async with body:
@@ -111,20 +100,13 @@ class S3Storage(IFileStorage):
                 message="S3 is unavailable: failed to get files."
             ) from exc
 
-    async def remove_file(
-        self,
-        *,
-        input_dto: RemoveFileFromStorage,
-        user: S3User,
-    ) -> None:
+    async def remove_file(self, *, key: str | URL) -> None:
         relative_key = self.__s3_client.convert_to_relative_key(
-            input_dto=ConvertToRelativeKey(key=input_dto.key),
-            user=user,
+            key=key,
         )
         try:
             await self.__s3_client.remove_file(
-                input_dto=RemoveFileFromStorage(key=relative_key),
-                user=user,
+                key=relative_key,
             )
         except S3ClientException as exc:
             log.error("Failed to remove file from S3: %s", exc)
@@ -132,20 +114,13 @@ class S3Storage(IFileStorage):
                 message="S3 is unavailable: failed to remove file."
             ) from exc
 
-    async def get_file_info(
-        self,
-        *,
-        input_dto: GetFileInfoFromStorage,
-        user: S3User,
-    ) -> FileInfo:
+    async def get_file_info(self, *, key: str | URL) -> FileInfo:
         relative_key = self.__s3_client.convert_to_relative_key(
-            input_dto=ConvertToRelativeKey(key=input_dto.key),
-            user=user,
+            key=key,
         )
         try:
             response = await self.__s3_client.get_file_info(
-                input_dto=GetFileInfoFromStorage(key=relative_key),
-                user=user,
+                key=relative_key,
             )
             return FileInfo(
                 key=relative_key,
@@ -160,32 +135,25 @@ class S3Storage(IFileStorage):
                 message="S3 is unavailable: failed to get file info."
             ) from exc
 
-    def get_file_url(self, *, input_dto: BuildFileUrl, user: S3User) -> str:
+    def get_file_url(self, *, input_dto: BuildFileUrl) -> URL:
         key = self.__s3_client.build_file_key(
             input_dto=BuildFileKey(
                 entity=input_dto.entity,
                 file_id=input_dto.file_id,
                 file_ext=input_dto.file_ext,
             ),
-            user=user,
         )
         return self.__s3_client.get_external_url(
-            input_dto=GetFileFromStorage(key=key),
-            user=user,
+            key=key,
         )
 
-    def build_file_key(self, *, input_dto: BuildFileKey, user: S3User) -> str:
-        return self.__s3_client.build_file_key(input_dto=input_dto, user=user)
+    def build_file_key(self, *, input_dto: BuildFileKey) -> str:
+        return self.__s3_client.build_file_key(input_dto=input_dto)
 
-    def convert_to_relative_key(
-        self,
-        *,
-        input_dto: ConvertToRelativeKey,
-        user: S3User,
-    ) -> str:
-        return self.__s3_client.convert_to_relative_key(input_dto=input_dto, user=user)
+    def convert_to_relative_key(self, *, key: str | URL) -> str:
+        return self.__s3_client.convert_to_relative_key(key=key)
 
-    def _detect_extension(self, *, input_dto: UploadFileToStorage) -> str:
+    def _detect_extension(self, *, input_dto: CreateFile) -> str:
         if input_dto.filename is not None:
             suffix = Path(input_dto.filename).suffix.lower().lstrip(".")
             if suffix:

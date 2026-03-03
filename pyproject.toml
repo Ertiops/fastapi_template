@@ -8,7 +8,7 @@ requires-python = ">=3.12"
 
 dependencies = [
     "aiomisc>=17.5.24,<18.0.0",
-    "aiobotocore>=2.24.2",
+    "aioboto3>=13.3.0",
     "alembic==1.15.2",
     "asyncpg>=0.30.0",
     "adaptix>=3.0.0b9",
@@ -115,7 +115,7 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
-    "aiobotocore.*",
+    "aioboto3.*",
     "botocore.*",
 ]
 ignore_missing_imports = true

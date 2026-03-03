@@ -1,14 +1,12 @@
 from collections.abc import AsyncGenerator
 
-from aiobotocore.client import AioBaseClient
-from aiobotocore.session import AioSession
+import aioboto3
 from botocore.config import Config
 from dishka import BaseScope, Component, Provider, Scope, provide
 
-from app.adapters.s3.client import S3Client
+from app.adapters.s3.client import S3ApiClient, S3Client
 from app.adapters.s3.config import S3Config
 from app.adapters.s3.storage import S3Storage
-from app.adapters.s3.utils import create_session
 from app.domain.interfaces.storages.file import IFileStorage
 
 
@@ -25,21 +23,22 @@ class S3Provider(Provider):
         self.endpoint_url = config.endpoint_url
         self.max_pool_connections = config.max_pool_connections
         self.max_attempts = config.max_attempts
-        self.multipart_chunk_size = config.multipart_chunk_size
         super().__init__(scope=scope, component=component)
 
     @provide(scope=Scope.APP)
-    def session(self) -> AioSession:
-        return create_session()
+    def session(self) -> aioboto3.Session:
+        return aioboto3.Session()
 
     @provide(scope=Scope.REQUEST)
-    async def client(self, session: AioSession) -> AsyncGenerator[AioBaseClient, None]:
+    async def client(
+        self, session: aioboto3.Session
+    ) -> AsyncGenerator[S3ApiClient, None]:
         config = Config(
             max_pool_connections=self.max_pool_connections,
-            retries={"max_attempts": self.max_attempts, "mode": "standard"},
+            retries=dict(max_attempts=self.max_attempts, mode="standard"),
         )
 
-        async with session.create_client(  # type: ignore[call-overload]
+        async with session.client(
             "s3",
             aws_secret_access_key=self.secret_key,
             aws_access_key_id=self.access_key,
@@ -49,12 +48,11 @@ class S3Provider(Provider):
             yield client
 
     @provide(scope=Scope.REQUEST)
-    def s3_client(self, client: AioBaseClient) -> S3Client:
+    def s3_client(self, client: S3ApiClient) -> S3Client:
         return S3Client(
             client=client,
             bucket=self.bucket,
             endpoint_url=self.endpoint_url,
-            multipart_chunk_size=self.multipart_chunk_size,
         )
 
     @provide(scope=Scope.REQUEST)

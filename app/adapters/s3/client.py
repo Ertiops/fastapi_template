@@ -1,48 +1,45 @@
 import logging
-from typing import Any
-from urllib.parse import urlparse
+from typing import Any, Protocol
 
-from aiobotocore.client import AioBaseClient
 from botocore.exceptions import ClientError
+from yarl import URL
 
 from app.application.exceptions import S3ClientException
 from app.domain.entities.file import (
     BuildFileKey,
-    ConvertToRelativeKey,
-    GetFileFromStorage,
-    GetFileInfoFromStorage,
-    RemoveFileFromStorage,
-    S3User,
     UploadFileByKey,
 )
 
 log = logging.getLogger(__name__)
 
 
+class S3ApiClient(Protocol):
+    async def create_bucket(self, **kwargs: Any) -> Any: ...
+    async def put_object(self, **kwargs: Any) -> Any: ...
+    async def get_object(self, **kwargs: Any) -> dict[str, Any]: ...
+    async def delete_object(self, **kwargs: Any) -> Any: ...
+    async def delete_objects(self, **kwargs: Any) -> Any: ...
+    async def head_object(self, **kwargs: Any) -> dict[str, Any]: ...
+    async def list_objects_v2(self, **kwargs: Any) -> dict[str, Any]: ...
+
+
 class S3Client:
-    _endpoint_url: str
-    _bucket: str
-    _client: AioBaseClient
-    _multipart_chunk_size: int
+    __endpoint_url: URL
+    __bucket: str
+    __client: S3ApiClient
 
     def __init__(
         self,
         *,
-        client: AioBaseClient,
+        client: S3ApiClient,
         bucket: str,
-        endpoint_url: str,
-        multipart_chunk_size: int,
+        endpoint_url: str | URL,
     ) -> None:
-        self._client = client
-        self._endpoint_url = endpoint_url.rstrip("/")
-        self._bucket = bucket
-        self._multipart_chunk_size = multipart_chunk_size
+        self.__client = client
+        self.__endpoint_url = URL(str(endpoint_url).rstrip("/"))
+        self.__bucket = bucket
 
-    async def upload_file(self, *, input_dto: UploadFileByKey, user: S3User) -> None:
-        upload_id: str | None = None
-        parts: list[dict[str, Any]] = []
-        part_number = 1
-
+    async def upload_file(self, *, input_dto: UploadFileByKey) -> None:
         extra_args: dict[str, Any] = {}
         if input_dto.public_read:
             extra_args["ACL"] = "public-read"
@@ -52,128 +49,63 @@ class S3Client:
 
         try:
             input_dto.file.seek(0)
-            first_chunk = input_dto.file.read(self._multipart_chunk_size)
-            if not first_chunk:
-                await self._client.put_object(  # type: ignore[attr-defined]
-                    Bucket=self._bucket,
-                    Key=input_dto.key,
-                    Body=b"",
-                    **extra_args,
-                )
-                return
-
-            create_resp = await self._client.create_multipart_upload(  # type: ignore[attr-defined]
-                Bucket=self._bucket,
+            await self.__client.put_object(
+                Bucket=self.__bucket,
                 Key=input_dto.key,
+                Body=input_dto.file.read(),
                 **extra_args,
-            )
-            upload_id = create_resp["UploadId"]
-
-            chunk: bytes = first_chunk
-            while chunk:
-                upload_part_resp = await self._client.upload_part(  # type: ignore[attr-defined]
-                    Bucket=self._bucket,
-                    Key=input_dto.key,
-                    PartNumber=part_number,
-                    UploadId=upload_id,
-                    Body=chunk,
-                )
-                parts.append(
-                    {
-                        "PartNumber": part_number,
-                        "ETag": upload_part_resp["ETag"],
-                    }
-                )
-                part_number += 1
-                chunk = input_dto.file.read(self._multipart_chunk_size)
-
-            await self._client.complete_multipart_upload(  # type: ignore[attr-defined]
-                Bucket=self._bucket,
-                Key=input_dto.key,
-                UploadId=upload_id,
-                MultipartUpload={"Parts": parts},
             )
         except ClientError as exc:
             log.error("Error uploading file %s to S3: %s", input_dto.key, exc)
-            if upload_id is not None:
-                await self._abort_multipart_upload(
-                    key=input_dto.key,
-                    upload_id=upload_id,
-                )
             raise S3ClientException(message="Failed to upload file to S3.") from exc
 
     async def get_file(
         self,
         *,
-        input_dto: GetFileFromStorage,
-        user: S3User,
+        key: str,
     ) -> dict[str, Any]:
         try:
-            return await self._client.get_object(  # type: ignore[attr-defined]
-                Bucket=self._bucket,
-                Key=input_dto.key,
+            return await self.__client.get_object(
+                Bucket=self.__bucket,
+                Key=key,
             )
         except ClientError as exc:
-            log.error("Error getting file %s from S3: %s", input_dto.key, exc)
+            log.error("Error getting file %s from S3: %s", key, exc)
             raise S3ClientException(message="Failed to get file from S3.") from exc
 
-    async def remove_file(
-        self,
-        *,
-        input_dto: RemoveFileFromStorage,
-        user: S3User,
-    ) -> None:
+    async def remove_file(self, *, key: str) -> None:
         try:
-            await self._client.delete_object(  # type: ignore[attr-defined]
-                Bucket=self._bucket,
-                Key=input_dto.key,
+            await self.__client.delete_object(
+                Bucket=self.__bucket,
+                Key=key,
             )
         except ClientError as exc:
-            log.error("Error removing file %s from S3: %s", input_dto.key, exc)
+            log.error("Error removing file %s from S3: %s", key, exc)
             raise S3ClientException(message="Failed to remove file from S3.") from exc
 
-    async def get_file_info(
-        self,
-        *,
-        input_dto: GetFileInfoFromStorage,
-        user: S3User,
-    ) -> dict[str, Any]:
+    async def get_file_info(self, *, key: str) -> dict[str, Any]:
         try:
-            return await self._client.head_object(  # type: ignore[attr-defined]
-                Bucket=self._bucket,
-                Key=input_dto.key,
+            return await self.__client.head_object(
+                Bucket=self.__bucket,
+                Key=key,
             )
         except ClientError as exc:
-            log.error("Error getting file info %s from S3: %s", input_dto.key, exc)
+            log.error("Error getting file info %s from S3: %s", key, exc)
             raise S3ClientException(message="Failed to get file info from S3.") from exc
 
-    def get_external_url(self, *, input_dto: GetFileFromStorage, user: S3User) -> str:
-        return f"{self._endpoint_url}/{self._bucket}/{input_dto.key}"
+    def get_external_url(self, *, key: str) -> URL:
+        key = key.lstrip("/")
+        return self.__endpoint_url.with_path(f"/{self.__bucket}/{key}")
 
-    def build_file_key(self, *, input_dto: BuildFileKey, user: S3User) -> str:
+    def build_file_key(self, *, input_dto: BuildFileKey) -> str:
         return f"{input_dto.entity}/{input_dto.file_id}.{input_dto.file_ext}"
 
-    def convert_to_relative_key(
-        self,
-        *,
-        input_dto: ConvertToRelativeKey,
-        user: S3User,
-    ) -> str:
-        parsed = urlparse(input_dto.key)
-        if parsed.scheme and parsed.netloc:
+    def convert_to_relative_key(self, *, key: str | URL) -> str:
+        parsed = key if isinstance(key, URL) else URL(key)
+        if parsed.scheme and parsed.host:
             path = parsed.path.lstrip("/")
-            bucket_prefix = f"{self._bucket}/"
+            bucket_prefix = f"{self.__bucket}/"
             if path.startswith(bucket_prefix):
                 return path[len(bucket_prefix) :]
             return path
-        return input_dto.key.lstrip("/")
-
-    async def _abort_multipart_upload(self, *, key: str, upload_id: str) -> None:
-        try:
-            await self._client.abort_multipart_upload(  # type: ignore[attr-defined]
-                Bucket=self._bucket,
-                Key=key,
-                UploadId=upload_id,
-            )
-        except ClientError as exc:
-            log.error("Error aborting multipart upload for %s: %s", key, exc)
+        return str(key).lstrip("/")
