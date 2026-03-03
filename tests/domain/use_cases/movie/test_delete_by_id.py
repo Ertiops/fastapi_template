@@ -1,5 +1,4 @@
 from collections.abc import Awaitable, Callable
-from uuid import uuid4
 
 import pytest
 
@@ -8,6 +7,7 @@ from app.application.exceptions import (
     EntityNotFoundException,
 )
 from app.domain.use_cases.movie.delete_by_id import DeleteMovieByIdUC
+from app.utils.uuid import generate_uuid7
 from tests.utils.common import now_utc
 
 
@@ -24,7 +24,7 @@ async def test__delete_by_id__entity_not_found_exception(
     delete_movie_by_id_uc: DeleteMovieByIdUC,
 ) -> None:
     with pytest.raises(EntityNotFoundException):
-        await delete_movie_by_id_uc.execute(input_dto=uuid4())
+        await delete_movie_by_id_uc.execute(input_dto=generate_uuid7())
 
 
 async def test__delete_by_id__entity_not_found_exception__deleted(

@@ -1,5 +1,4 @@
 from collections.abc import Awaitable, Callable
-from uuid import uuid4
 
 import pytest
 
@@ -11,6 +10,7 @@ from app.domain.entities.user import (
     User,
 )
 from app.domain.use_cases.user.get_by_id import GetUserByIdUC
+from app.utils.uuid import generate_uuid7
 from tests.utils.common import now_utc
 
 
@@ -33,7 +33,7 @@ async def test__get_by_id__entity_not_found_exception(
     get_user_by_id_uc: GetUserByIdUC,
 ) -> None:
     with pytest.raises(EntityNotFoundException):
-        await get_user_by_id_uc.execute(input_dto=uuid4())
+        await get_user_by_id_uc.execute(input_dto=generate_uuid7())
 
 
 async def test__get_by_id__entity_not_found_exception__deleted(

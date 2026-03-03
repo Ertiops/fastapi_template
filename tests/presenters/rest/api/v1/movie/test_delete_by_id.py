@@ -1,15 +1,16 @@
 from collections.abc import Awaitable, Callable
 from http import HTTPStatus
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.tables import MovieTable
+from app.utils.uuid import generate_uuid7
 from tests.utils.common import now_utc
 
 
-def api_url(movie_id: UUID = uuid4()) -> str:
+def api_url(movie_id: UUID = generate_uuid7()) -> str:
     return f"/api/v1/movies/{movie_id}/"
 
 

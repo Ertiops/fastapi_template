@@ -1,5 +1,5 @@
-import uuid
 from datetime import UTC, datetime
+from uuid import UUID
 
 from sqlalchemy import DateTime, MetaData, text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -10,6 +10,8 @@ from sqlalchemy.orm import (
     declared_attr,
     mapped_column,
 )
+
+from app.utils.uuid import generate_uuid7
 
 convention = {
     "all_column_names": lambda constraint, table: "_".join(
@@ -56,11 +58,11 @@ class TimestampedMixin:
 @declarative_mixin
 class IdentifableMixin:
     @declared_attr
-    def id(cls) -> Mapped[uuid.UUID]:
+    def id(cls) -> Mapped[UUID]:
         return mapped_column(
             PGUUID(as_uuid=True),
             primary_key=True,
-            default=uuid.uuid4,
+            default=generate_uuid7,
         )
 
 
