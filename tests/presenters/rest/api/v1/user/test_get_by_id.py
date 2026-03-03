@@ -8,8 +8,6 @@ from uuid6 import uuid7
 
 from app.adapters.database.tables import UserTable
 
-UUID_1 = UUID(int=1)
-
 
 def api_url(user_id: UUID = uuid7()) -> str:
     return f"/api/v1/users/{user_id}/"

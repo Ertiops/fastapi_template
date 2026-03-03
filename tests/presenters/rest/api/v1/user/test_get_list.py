@@ -1,7 +1,6 @@
 from collections.abc import Callable, Mapping
 from http import HTTPStatus
 from typing import Any
-from uuid import UUID
 
 import pytest
 from dirty_equals import IsStr
@@ -10,9 +9,6 @@ from httpx import AsyncClient
 from app.adapters.database.tables import UserTable
 
 API_URL = "/api/v1/users/"
-
-UUID_1 = UUID(int=1)
-UUID_2 = UUID(int=2)
 
 
 @pytest.mark.parametrize(
