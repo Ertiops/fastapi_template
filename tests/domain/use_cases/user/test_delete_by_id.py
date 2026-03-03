@@ -1,13 +1,13 @@
 from collections.abc import Awaitable, Callable
 
 import pytest
+from uuid6 import uuid7
 
 from app.adapters.database.tables import UserTable
 from app.application.exceptions import (
     EntityNotFoundException,
 )
 from app.domain.use_cases.user.delete_by_id import DeleteUserByIdUC
-from app.utils.uuid import generate_uuid7
 from tests.utils.common import now_utc
 
 
@@ -24,7 +24,7 @@ async def test__delete_by_id__entity_not_found_exception(
     delete_user_by_id_uc: DeleteUserByIdUC,
 ) -> None:
     with pytest.raises(EntityNotFoundException):
-        await delete_user_by_id_uc.execute(input_dto=generate_uuid7())
+        await delete_user_by_id_uc.execute(input_dto=uuid7())
 
 
 async def test__delete_by_id__entity_not_found_exception__deleted(

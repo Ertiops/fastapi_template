@@ -10,8 +10,7 @@ from sqlalchemy.orm import (
     declared_attr,
     mapped_column,
 )
-
-from app.utils.uuid import generate_uuid7
+from uuid6 import uuid7
 
 convention = {
     "all_column_names": lambda constraint, table: "_".join(
@@ -62,7 +61,7 @@ class IdentifableMixin:
         return mapped_column(
             PGUUID(as_uuid=True),
             primary_key=True,
-            default=generate_uuid7,
+            default=uuid7,
         )
 
 

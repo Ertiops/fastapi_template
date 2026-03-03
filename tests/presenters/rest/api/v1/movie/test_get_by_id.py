@@ -4,12 +4,12 @@ from uuid import UUID
 
 from dirty_equals import IsStr
 from httpx import AsyncClient
+from uuid6 import uuid7
 
 from app.adapters.database.tables import MovieTable
-from app.utils.uuid import generate_uuid7
 
 
-def api_url(movie_id: UUID = generate_uuid7()) -> str:
+def api_url(movie_id: UUID = uuid7()) -> str:
     return f"/api/v1/movies/{movie_id}/"
 
 

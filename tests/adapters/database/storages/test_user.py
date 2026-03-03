@@ -2,6 +2,7 @@ from collections.abc import Awaitable, Callable
 
 import pytest
 from dirty_equals import IsDatetime, IsUUID
+from uuid6 import uuid7
 
 from app.adapters.database.storages.user import UserStorage
 from app.adapters.database.tables import UserTable
@@ -15,7 +16,6 @@ from app.domain.entities.user import (
     User,
     UserListParams,
 )
-from app.utils.uuid import generate_uuid7
 from tests.utils.common import now_utc
 
 
@@ -80,7 +80,7 @@ async def test__get_by_id(
 
 
 async def test__get_by_id__none(user_storage: UserStorage) -> None:
-    assert await user_storage.get_by_id(input_dto=generate_uuid7()) is None
+    assert await user_storage.get_by_id(input_dto=uuid7()) is None
 
 
 async def test__get_by_id__deleted(
@@ -175,7 +175,7 @@ async def test__exists_by_id(
 
 
 async def test__exists_by_id__false(user_storage: UserStorage) -> None:
-    assert await user_storage.exists_by_id(input_dto=generate_uuid7()) is False
+    assert await user_storage.exists_by_id(input_dto=uuid7()) is False
 
 
 async def test__exists_by_id__deleted(
@@ -211,7 +211,7 @@ async def test__update_by_id__entity_not_found_exception(
 ) -> None:
     with pytest.raises(EntityNotFoundException):
         await user_storage.update_by_id(
-            input_dto=UpdateUser(id=generate_uuid7(), username="new_username")
+            input_dto=UpdateUser(id=uuid7(), username="new_username")
         )
 
 
@@ -236,4 +236,4 @@ async def test__delete_by_id(
 
 
 async def test__delete_by_id__none(user_storage: UserStorage) -> None:
-    assert await user_storage.delete_by_id(input_dto=generate_uuid7()) is None
+    assert await user_storage.delete_by_id(input_dto=uuid7()) is None

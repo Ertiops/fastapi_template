@@ -4,13 +4,13 @@ from uuid import UUID
 
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid6 import uuid7
 
 from app.adapters.database.tables import UserTable
-from app.utils.uuid import generate_uuid7
 from tests.utils.common import now_utc
 
 
-def api_url(user_id: UUID = generate_uuid7()) -> str:
+def api_url(user_id: UUID = uuid7()) -> str:
     return f"/api/v1/users/{user_id}/"
 
 
