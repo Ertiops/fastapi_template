@@ -1,8 +1,8 @@
 from collections.abc import Awaitable, Callable
-from uuid import uuid4
 
 import pytest
 from dirty_equals import IsDatetime
+from uuid6 import uuid7
 
 from app.adapters.database.tables import MovieTable
 from app.application.exceptions import (
@@ -54,7 +54,7 @@ async def test__update_by_id__entity_not_found_exception(
     with pytest.raises(EntityNotFoundException):
         await update_movie_by_id_uc.execute(
             input_dto=UpdateMovie(
-                id=uuid4(),
+                id=uuid7(),
                 title="test_title",
             )
         )

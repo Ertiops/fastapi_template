@@ -1,7 +1,7 @@
 from collections.abc import Awaitable, Callable
-from uuid import uuid4
 
 import pytest
+from uuid6 import uuid7
 
 from app.adapters.database.tables import MovieTable
 from app.application.exceptions import (
@@ -38,7 +38,7 @@ async def test__get_by_id__entity_not_found_exception(
     get_movie_by_id_uc: GetMovieByIdUC,
 ) -> None:
     with pytest.raises(EntityNotFoundException):
-        await get_movie_by_id_uc.execute(input_dto=uuid4())
+        await get_movie_by_id_uc.execute(input_dto=uuid7())
 
 
 async def test__get_by_id__entity_not_found_exception__deleted(

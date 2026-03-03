@@ -1,16 +1,15 @@
 from collections.abc import Awaitable, Callable
 from http import HTTPStatus
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from dirty_equals import IsStr
 from httpx import AsyncClient
+from uuid6 import uuid7
 
 from app.adapters.database.tables import UserTable
 
-UUID_1 = UUID(int=1)
 
-
-def api_url(user_id: UUID = uuid4()) -> str:
+def api_url(user_id: UUID = uuid7()) -> str:
     return f"/api/v1/users/{user_id}/"
 
 

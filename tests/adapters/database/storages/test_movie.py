@@ -1,8 +1,9 @@
 from collections.abc import Awaitable, Callable
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import pytest
 from dirty_equals import IsDatetime, IsUUID
+from uuid6 import uuid7
 
 from app.adapters.database.storages.movie import MovieStorage
 from app.adapters.database.tables import MovieTable
@@ -85,7 +86,7 @@ async def test__get_by_id(
 
 
 async def test__get_by_id__none(movie_storage: MovieStorage) -> None:
-    assert await movie_storage.get_by_id(input_dto=uuid4()) is None
+    assert await movie_storage.get_by_id(input_dto=uuid7()) is None
 
 
 async def test__get_by_id__deleted(
@@ -199,7 +200,7 @@ async def test__exists_by_id(
 
 
 async def test__exists_by_id__false(movie_storage: MovieStorage) -> None:
-    assert await movie_storage.exists_by_id(input_dto=uuid4()) is False
+    assert await movie_storage.exists_by_id(input_dto=uuid7()) is False
 
 
 async def test__exists_by_id__deleted(
@@ -245,7 +246,7 @@ async def test__update_by_id__entity_not_found_exception(
 ) -> None:
     with pytest.raises(EntityNotFoundException):
         await movie_storage.update_by_id(
-            input_dto=UpdateMovie(id=uuid4(), title="test_title")
+            input_dto=UpdateMovie(id=uuid7(), title="test_title")
         )
 
 
