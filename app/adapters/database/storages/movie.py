@@ -7,7 +7,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.base import now_with_tz
-from app.adapters.database.converters.movie import convert_movie_table_to_dto
+from app.adapters.database.converters.movie import convert_movie
 from app.adapters.database.tables import MovieTable
 from app.application.exceptions import (
     EntityAlreadyExistsException,
@@ -33,7 +33,7 @@ class MovieStorage(IMovieStorage):
             result = (await self.__session.scalars(stmt)).one()
         except IntegrityError as e:
             self.__raise_exception(e)
-        return convert_movie_table_to_dto(result=result)
+        return convert_movie(result=result)
 
     async def get_by_id(self, *, input_dto: UUID) -> Movie | None:
         stmt = select(MovieTable).where(
@@ -41,7 +41,7 @@ class MovieStorage(IMovieStorage):
             MovieTable.deleted_at.is_(None),
         )
         result = await self.__session.scalar(stmt)
-        return convert_movie_table_to_dto(result=result) if result else None
+        return convert_movie(result=result) if result else None
 
     async def get_list(self, *, input_dto: MovieListParams) -> Sequence[Movie]:
         stmt = (
@@ -52,7 +52,7 @@ class MovieStorage(IMovieStorage):
             .order_by(MovieTable.id)
         )
         result = await self.__session.scalars(stmt)
-        return [convert_movie_table_to_dto(result=r) for r in result]
+        return [convert_movie(result=r) for r in result]
 
     async def count(self, *, input_dto: MovieListParams) -> int:
         stmt = (
@@ -84,7 +84,7 @@ class MovieStorage(IMovieStorage):
             raise EntityNotFoundException(entity=Movie, entity_id=input_dto.id) from e
         except IntegrityError as e:
             self.__raise_exception(e)
-        return convert_movie_table_to_dto(result=result)
+        return convert_movie(result=result)
 
     async def delete_by_id(self, *, input_dto: UUID) -> None:
         stmt = (

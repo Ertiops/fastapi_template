@@ -2,7 +2,7 @@ from app.adapters.database.tables import UserTable
 from app.domain.entities.user import User
 
 
-def convert_user_table_to_dto(
+def convert_user(
     *,
     result: UserTable,
 ) -> User:
