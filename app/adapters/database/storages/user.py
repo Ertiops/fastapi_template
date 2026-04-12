@@ -7,7 +7,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.base import now_with_tz
-from app.adapters.database.converters.user import convert_user_table_to_dto
+from app.adapters.database.converters.user import convert_user
 from app.adapters.database.tables import UserTable
 from app.application.exceptions import (
     EntityAlreadyExistsException,
@@ -33,14 +33,14 @@ class UserStorage(IUserStorage):
             result = (await self.__session.scalars(stmt)).one()
         except IntegrityError as e:
             self.__raise_exception(e)
-        return convert_user_table_to_dto(result=result)
+        return convert_user(result=result)
 
     async def get_by_id(self, *, input_dto: UUID) -> User | None:
         stmt = select(UserTable).where(
             UserTable.id == input_dto, UserTable.deleted_at.is_(None)
         )
         result = await self.__session.scalar(stmt)
-        return convert_user_table_to_dto(result=result) if result else None
+        return convert_user(result=result) if result else None
 
     async def get_list(self, *, input_dto: UserListParams) -> Sequence[User]:
         stmt = (
@@ -51,7 +51,7 @@ class UserStorage(IUserStorage):
             .order_by(UserTable.created_at, UserTable.id)
         )
         result = await self.__session.scalars(stmt)
-        return [convert_user_table_to_dto(result=r) for r in result]
+        return [convert_user(result=r) for r in result]
 
     async def count(self, *, input_dto: UserListParams) -> int:
         stmt = (
@@ -83,7 +83,7 @@ class UserStorage(IUserStorage):
             raise EntityNotFoundException(entity=User, entity_id=input_dto.id) from e
         except IntegrityError as e:
             self.__raise_exception(e)
-        return convert_user_table_to_dto(result=result)
+        return convert_user(result=result)
 
     async def delete_by_id(self, *, input_dto: UUID) -> None:
         stmt = (

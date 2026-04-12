@@ -2,7 +2,7 @@ from app.adapters.database.tables import MovieTable
 from app.domain.entities.movie import Movie
 
 
-def convert_movie_table_to_dto(
+def convert_movie(
     *,
     result: MovieTable,
 ) -> Movie:
