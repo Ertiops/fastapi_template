@@ -20,7 +20,7 @@ from app.adapters.database.utils import (
     create_sessionmaker,
     make_alembic_config,
 )
-from tests.utils.db import run_async_migrations, truncate_tables
+from tests.utils.db import truncate_tables
 from tests.utils.worker import get_worker_schema_name
 
 
@@ -67,7 +67,6 @@ async def engine_context(
 
 @pytest.fixture(scope="session")
 async def engine(
-    alembic_config: AlembicConfig,
     db_config: DatabaseConfig,
     engine_context: None,
 ) -> AsyncIterator[AsyncEngine]:
@@ -78,9 +77,8 @@ async def engine(
         debug=False,
         connect_args={"server_settings": {"search_path": schema}},
     ) as engine:
-        await run_async_migrations(
-            alembic_config, BaseTable.metadata, "head", engine=engine
-        )
+        async with engine.begin() as connection:
+            await connection.run_sync(BaseTable.metadata.create_all)
         await truncate_tables(engine, schema_name=schema)
         yield engine
 
